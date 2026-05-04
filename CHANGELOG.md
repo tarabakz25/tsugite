@@ -10,6 +10,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- AI Agent機能を実装。後継者が先代女将に相談できるRAGベースのチャットインターフェース（`/successor/agent`）を追加
+- `ai` (Vercel AI SDK)、`openai`、`zod`、`@ai-sdk/openai`、`@hono/zod-validator` を依存関係に追加。LLMストリーミング、Embedding生成、TTS音声合成を実現
+- `types/agent.ts` を追加。`ChatMessage`、`ChatCitation`、`RAGContext` などのAgent機能用型定義
+- `lib/agent/rag.ts` を追加。OpenAI Embedding生成、pgvectorによる類似タグ検索、関連インタビュー取得、RAGプロンプト生成の実装
+- `POST /api/agent/chat` エンドポイントを追加。質問をEmbedding化し、tacit_tagsとinterviewsを参照してGPT-4による回答をストリーミング生成
+- `POST /api/agent/tts` エンドポイントを追加。OpenAI TTS APIで回答テキストを音声化
+- `features/agent/components/agent-chat.tsx` を追加。チャットUI、メッセージ履歴、音声再生、出典表示、サンプル質問を実装
+- `app/successor/agent/page.tsx` を追加。継ぎ手ダッシュボードから先代女将に相談できるページ
+- `.env.example` に `OPENAI_API_KEY` を追加（OpenAI API利用のため）
 - Drizzle を導入し、`drizzle.config.ts` と `db/schema.ts` に `profiles` / `shops` / Archive / Guide / Agent のDBスキーマを定義。DB構造をTypeScriptから確認・生成できるようにした
 - `supabase/migrations/20260505090000_core_feature_schema.sql` で `shops`、`interviews`、`tacit_tags`、`tag_embeddings`、`reference_scenes`、`observation_logs` と RLS policy を追加。ArchiveをGuideとAgentのデータソースにする依存関係へ整理した
 - `package.json` に `db:generate` / `db:studio` scripts を追加。Drizzle Kit 経由のmigration生成とschema確認をBunで実行できるようにした
