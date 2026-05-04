@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
+    "db:init": "supabase init",
+    "db:link": "supabase link",
     "db:studio": "drizzle-kit studio",
+    "db:push": "supabase db push",
     "prepare": "husky"
   },
   "dependencies": {

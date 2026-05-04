@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `supabase/migrations/20260505090000_core_feature_schema.sql` で `shops`、`interviews`、`tacit_tags`、`tag_embeddings`、`reference_scenes`、`observation_logs` と RLS policy を追加。ArchiveをGuideとAgentのデータソースにする依存関係へ整理した
 - `package.json` に `db:generate` / `db:studio` scripts を追加。Drizzle Kit 経由のmigration生成とschema確認をBunで実行できるようにした
 - `.gitignore` と `.prettierignore` に `.clerk/.tmp/` と `supabase/.temp/` を追加。ローカル生成ファイルがstatusやformat checkを汚さないようにした
+- `supabase/migrations/20260504210000_profiles_insert_own.sql` で `profiles_insert_own` RLS policy を追加。Auth トリガー未適用時や既存ユーザーで `profiles` 行が無い場合も、ログイン済みユーザーが自分のプロフィール行を作れるようにした
+- `package.json` に `db:init` / `db:link` / `db:push` scripts を追加。Supabase CLI の初期化、プロジェクトリンク、migration 適用を Bun 経由で実行できるようにした
 - TSUGITE のデザイントークンを `app/globals.css` に定義。和紙、墨、朱、状態色、focus / disabled の基準を Tailwind CSS v4 のクラスから参照できるようにした
 - `components/ui/` に Button、Input、Textarea、Select、Checkbox、Toggle、Badge、StatusBadge、Card、Dialog、Sheet、Tabs、EmptyState、InlineFeedback、AppShell を追加。後続画面で共有できる UI プリミティブとして整備した
 - デザインシステム UI カタログを `/design-system` に配置（旧ルート `app/page.tsx` 相当）
@@ -49,6 +51,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `getCurrentProfile()` でログイン済みユーザーの `profiles` 行が見つからない場合、Google のユーザーメタデータから自分のプロフィール行を作成してオンボーディングへ進めるようにした
+- OAuth ログイン後の既定遷移先を `/` から `/onboarding/role` に変更。LP のログインリンクから入った場合も、ログイン済みユーザーはロール選択または該当ダッシュボードへ進めるようにした
 - ルート `/` はマーケ用ランディング（`app/(marketing)/page.tsx`）。`/sign-in`・`/sign-up` は `/login` へ誘導
 - オンボーディング・店／継ぎ手プロフィールの永続化は Clerk `publicMetadata` ではなく `public.profiles` の `role` / `shop_profile` / `successor_profile` に統一
 - `.env.example` を Supabase（`NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`）と `APP_ORIGIN` に合わせ、`GOOGLE_*` と `AUTH_SESSION_SECRET` の記載を廃止
