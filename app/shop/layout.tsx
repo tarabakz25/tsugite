@@ -9,6 +9,7 @@ const SHOP_NAV = [
   { href: '/shop/profile', label: 'プロフィール' },
   { href: '/shop/listings', label: '募集管理' },
   { href: '/shop/applications', label: '応募' },
+  { href: '/shop/archive', label: 'Archive - 暗黙知' },
 ] as const
 
 export default async function ShopSectionLayout({

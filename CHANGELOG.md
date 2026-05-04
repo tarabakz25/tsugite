@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Archive機能を実装。店主のインタビュー動画から暗黙知を抽出・蓄積する機能
+  - Supabase Storage に動画をアップロードする機能（`interview-videos` バケット）
+  - OpenAI Whisper API による文字起こし機能
+  - GPT-4 による暗黙知タグ抽出（状況・判断・理由の3層構造）
+  - OpenAI Embeddings API による埋め込みベクトル生成
+  - `/shop/archive` ページでインタビュー一覧、暗黙知タグ一覧を表示
+  - `features/archive/` に VideoUploadForm、InterviewsList、TacitTagsList コンポーネントを追加
+  - `/api/archive/transcribe/:id`、`/api/archive/extract/:id`、`/api/archive/embed/:id` API エンドポイントを追加
+- `openai`、`zod`、`ai` パッケージを dependencies に追加
+- `.env.example` に `OPENAI_API_KEY` を追加
+- `supabase/migrations/20260505100000_storage_buckets.sql` でストレージバケットとRLSポリシーを追加
+- `lib/openai.ts` に OpenAI クライアントを追加
 - Drizzle を導入し、`drizzle.config.ts` と `db/schema.ts` に `profiles` / `shops` / Archive / Guide / Agent のDBスキーマを定義。DB構造をTypeScriptから確認・生成できるようにした
 - `supabase/migrations/20260505090000_core_feature_schema.sql` で `shops`、`interviews`、`tacit_tags`、`tag_embeddings`、`reference_scenes`、`observation_logs` と RLS policy を追加。ArchiveをGuideとAgentのデータソースにする依存関係へ整理した
 - `package.json` に `db:generate` / `db:studio` scripts を追加。Drizzle Kit 経由のmigration生成とschema確認をBunで実行できるようにした
