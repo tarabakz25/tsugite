@@ -10,6 +10,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Guide機能 (AI弟子モード) を実装**。スマホカメラで現場をかざすと、Vision APIが画像認識し、先代の正しい所作（`reference_scenes`）と照合してフィードバックする
+  - WebRTCでカメラ映像を取得し、1〜2秒ごとにスナップショット撮影
+  - Gemini 2.0 Flash (Google Generative AI) でクラウドVision推論を実施（MVPはオンデバイス推論を見送り）
+  - GPT-4oでフィードバック文を生成（先代の口調で優しく指導）
+  - OpenAI TTS APIで音声読み上げ
+  - `observation_logs`テーブルへ観察結果を自動保存
+  - `/shop/guide`ページと`features/guide/`モジュールを追加
+  - デモシナリオ: 「客室のお茶出し準備」の参照シーンを作成可能
+- Guide feature用のAPI routeを追加（`/api/guide/analyze`, `/api/guide/tts`）
+- `.env.example`に`GOOGLE_GENERATIVE_AI_API_KEY`と`OPENAI_API_KEY`を追加
+- 店向けダッシュボードナビゲーションに「Guide (AI弟子)」リンクを追加
+- Guide feature用の依存関係を追加：`openai`, `@google/generative-ai`, `ai` (Vercel AI SDK)
+
 - Drizzle を導入し、`drizzle.config.ts` と `db/schema.ts` に `profiles` / `shops` / Archive / Guide / Agent のDBスキーマを定義。DB構造をTypeScriptから確認・生成できるようにした
 - `supabase/migrations/20260505090000_core_feature_schema.sql` で `shops`、`interviews`、`tacit_tags`、`tag_embeddings`、`reference_scenes`、`observation_logs` と RLS policy を追加。ArchiveをGuideとAgentのデータソースにする依存関係へ整理した
 - `package.json` に `db:generate` / `db:studio` scripts を追加。Drizzle Kit 経由のmigration生成とschema確認をBunで実行できるようにした
