@@ -11,7 +11,7 @@ export default async function RegisterSuccessorPage() {
 
   const role = parseUserRole(profile)
   if (!role) redirect('/onboarding/role')
-  if (role !== 'successor') redirect('/shop')
+  if (role !== 'successor') redirect('/dashboard')
 
   const sp = profile.successor_profile
 

@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { sanitizeReturnTo } from '@/lib/sanitize-return-to'
 
-const PROTECTED_PREFIXES = ['/shop', '/successor', '/register', '/onboarding'] as const
+const PROTECTED_PREFIXES = ['/dashboard', '/register', '/onboarding'] as const
 
 function isProtectedPath(pathname: string): boolean {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -11,7 +11,7 @@ function isProtectedPath(pathname: string): boolean {
 
 /**
  * Refreshes the Supabase session from cookies. Redirects anonymous users away from
- * protected app sections (shop / successor / register / onboarding).
+ * protected app sections (dashboard / register / onboarding).
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({

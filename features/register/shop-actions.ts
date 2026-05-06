@@ -68,5 +68,5 @@ export async function saveShopProfile(
     return { error: 'required' }
   }
 
-  redirect('/shop')
+  redirect('/dashboard')
 }

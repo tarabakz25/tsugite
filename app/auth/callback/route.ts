@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         : { data: null }
       const role = profile?.role
       const nextPath =
-        role === 'shop' ? '/shop' : role === 'successor' ? '/successor' : '/onboarding/role'
+        role === 'shop' || role === 'successor' ? '/dashboard' : '/onboarding/role'
 
       return NextResponse.redirect(`${url.origin}${nextPath}`)
     }
