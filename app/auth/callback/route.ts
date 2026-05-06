@@ -8,13 +8,19 @@ export async function GET(request: NextRequest) {
   const code = url.searchParams.get('code')
   const requestedNextPath = sanitizeReturnTo(url.searchParams.get('next'))
 
+  // request.url の origin は dev server のバインドアドレス (0.0.0.0) になる場合があるため
+  // host ヘッダーから正しい origin を組み立てる
+  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? url.host
+  const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '')
+  const origin = `${proto}://${host}`
+
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
       if (requestedNextPath !== '/') {
-        return NextResponse.redirect(`${url.origin}${requestedNextPath}`)
+        return NextResponse.redirect(`${origin}${requestedNextPath}`)
       }
 
       const {
@@ -27,9 +33,9 @@ export async function GET(request: NextRequest) {
       const nextPath =
         role === 'shop' ? '/shop' : role === 'successor' ? '/successor' : '/onboarding/role'
 
-      return NextResponse.redirect(`${url.origin}${nextPath}`)
+      return NextResponse.redirect(`${origin}${nextPath}`)
     }
   }
 
-  return NextResponse.redirect(`${url.origin}/login?error=auth_callback`)
+  return NextResponse.redirect(`${origin}/login?error=auth_callback`)
 }
