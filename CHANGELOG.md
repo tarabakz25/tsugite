@@ -56,6 +56,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `app/shop/guide/page.tsx`, `features/guide/`: Guide が Archive で抽出した `tacit_tags` を直接ソースとして選択できるように変更。参照シーン未登録でも、暗黙知タグの「状況・判断・理由」を Vision/LLM フィードバックに渡して扱えるようにした
+- `features/guide/components/guide-interface.tsx`: スマホでの利用を優先し、Guide画面を縦積みレイアウト、縦長カメラ表示、下部固定操作ボタン、折り返し可能なタグ文脈表示に更新
 - `app/shop/settings/` および `app/successor/settings/`: ロール別設定セクションを新設
   - `shop/settings/shop/page.tsx`: 既存の `ShopProfileForm` を再利用し、現在の `shop_profile` を初期値としてプリフィルする店舗情報編集ページ
   - `shop/settings/members/page.tsx`: メンバー管理プレースホルダー（近日公開予定）

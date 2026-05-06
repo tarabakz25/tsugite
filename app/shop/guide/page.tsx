@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import GuideInterface from '@/features/guide/components/guide-interface'
-import { getReferenceScenes } from '@/features/guide/actions'
+import { getReferenceScenes, getTacitGuideTags } from '@/features/guide/actions'
+import type { GuideTacitTag } from '@/features/guide/types'
 import AppShell from '@/components/ui/app-shell'
 import Container from '@/components/ui/container'
 import { ensureShopForProfile } from '@/lib/shops'
@@ -30,22 +31,36 @@ export default async function GuidePage() {
     redirect('/onboarding/shop')
   }
 
-  // Get reference scenes
+  // Get Guide sources
+  const tagsResult = await getTacitGuideTags(shop.id)
+  const tags: GuideTacitTag[] = tagsResult.success
+    ? tagsResult.data.map((tag) => ({
+        id: tag.id,
+        situation: tag.situation,
+        judgment: tag.judgment,
+        reason: tag.reason,
+        isInferred: tag.is_inferred,
+        createdAt: tag.created_at,
+      }))
+    : []
+  const tagsById = new Map(tags.map((tag) => [tag.id, tag]))
+
   const scenesResult = await getReferenceScenes(shop.id)
   const scenes = scenesResult.success
-    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase returns generic Record type
-      scenesResult.data.map((scene: any) => ({
+    ? scenesResult.data.map((scene) => ({
         id: scene.id,
         sceneName: scene.scene_name,
-        correctState: scene.correct_state as Record<string, unknown>,
+        correctState: scene.correct_state,
         season: scene.season,
+        sourceTagId: scene.source_tag_id,
+        sourceTag: scene.source_tag_id ? (tagsById.get(scene.source_tag_id) ?? null) : null,
       }))
     : []
 
   return (
     <AppShell>
       <Container className="py-8">
-        <GuideInterface shopId={shop.id} scenes={scenes} />
+        <GuideInterface shopId={shop.id} scenes={scenes} tags={tags} />
       </Container>
     </AppShell>
   )

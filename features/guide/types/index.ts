@@ -5,11 +5,26 @@ export type VisionResult = {
   rawDescription: string
 }
 
+export type GuideSourceType = 'scene' | 'tag'
+
+export type GuideTacitTag = {
+  id: string
+  situation: string
+  judgment: string
+  reason: string
+  isInferred: boolean
+  createdAt: string
+}
+
+export type GuideSourceTagContext = Pick<GuideTacitTag, 'id' | 'situation' | 'judgment' | 'reason'>
+
 export type SceneState = {
   id: string
   sceneName: string
   correctState: Record<string, unknown>
   season?: string | null
+  sourceTagId?: string | null
+  sourceTag?: GuideTacitTag | null
 }
 
 export type GuideFeedback = {

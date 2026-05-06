@@ -37,24 +37,24 @@ export default function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
 
   if (!feedback) {
     return (
-      <div className="bg-washi-50 border border-sumi-200 rounded-lg p-6 text-center text-sumi-500">
+      <div className="rounded-lg border border-washi-3 bg-white p-5 text-center text-sm text-ink-4 sm:p-6">
         カメラをシーンにかざしてください
       </div>
     )
   }
 
   return (
-    <div className="bg-washi-50 border border-sumi-200 rounded-lg p-6 space-y-4">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="text-sm font-medium text-sumi-600 mb-2">先代からのフィードバック</h3>
-          <p className="text-base text-sumi-900 leading-relaxed">{feedback.text}</p>
+    <div className="space-y-4 rounded-lg border border-washi-3 bg-white p-5 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <h3 className="mb-2 text-sm font-medium text-ink-3">先代からのフィードバック</h3>
+          <p className="break-words text-base leading-7 text-ink">{feedback.text}</p>
         </div>
         {isPlaying && (
-          <div className="ml-4 flex items-center gap-2 text-sm text-sumi-500">
+          <div className="flex shrink-0 items-center gap-2 text-sm text-ink-4">
             <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-aka-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-aka-500"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-shu opacity-75"></span>
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-shu"></span>
             </span>
             再生中
           </div>

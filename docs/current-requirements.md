@@ -139,20 +139,20 @@ TSUGITE は、伝統工芸、旅館、老舗飲食などで言語化されにく
 
 ### 5.8 Guide
 
-| ID     | 要件                                                                                                         | 現状     |
-| ------ | ------------------------------------------------------------------------------------------------------------ | -------- |
-| GDE-01 | 店ユーザーは登録済み reference scene を選択して Guide を開始できる。                                         | 実装済み |
-| GDE-02 | reference scene は `scene_name`, `correct_state`, `season` を持つ。                                          | 実装済み |
-| GDE-03 | カメラは `navigator.mediaDevices.getUserMedia` を使い、可能なら背面カメラ、1280x720 を優先する。             | 実装済み |
-| GDE-04 | Guide 開始中は 2 秒間隔で video frame を JPEG data URL として取得する。                                      | 実装済み |
-| GDE-05 | `/api/guide/analyze` は画像、シーン名、正解状態を受け取り、Gemini Vision で見える物品を抽出する。            | 実装済み |
-| GDE-06 | 正解状態との差分比較は、`correct_state` の有効値を期待項目として、文字列包含で missing/extra を算出する。    | 実装済み |
-| GDE-07 | 差分をもとに GPT-4o が先代の口調で 2-3 文のフィードバックを生成する。                                        | 実装済み |
-| GDE-08 | `/api/guide/tts` は OpenAI TTS `tts-1`、voice `nova` で音声を生成し、base64 MP3 を返す。                     | 実装済み |
-| GDE-09 | Guide の結果は `observation_logs` に `shop_id`, `scene_id`, `vision_result`, `llm_feedback` として保存する。 | 実装済み |
-| GDE-10 | `/app/guide/logs` は観察ログ履歴を表示する。                                                                 | 実装済み |
-| GDE-11 | 正解シーン登録画面は静的表示であり、実保存フォームはない。                                                   | モック   |
-| GDE-12 | 画像はクラウド Vision API に送信されるため、画面上でデモモードかつプライバシー保証なしと表示する。           | 実装済み |
+| ID     | 要件                                                                                                                  | 現状     |
+| ------ | --------------------------------------------------------------------------------------------------------------------- | -------- |
+| GDE-01 | 店ユーザーは登録済み reference scene または Archive 由来の暗黙知タグを選択して Guide を開始できる。                   | 実装済み |
+| GDE-02 | reference scene は `scene_name`, `correct_state`, `season` を持つ。                                                   | 実装済み |
+| GDE-03 | カメラは `navigator.mediaDevices.getUserMedia` を使い、可能なら背面カメラ、1280x720 を優先する。                      | 実装済み |
+| GDE-04 | Guide 開始中は 2 秒間隔で video frame を JPEG data URL として取得する。                                               | 実装済み |
+| GDE-05 | `/api/guide/analyze` は画像、シーン名、正解状態または暗黙知タグを受け取り、Gemini Vision で見える物品を抽出する。     | 実装済み |
+| GDE-06 | 正解状態との差分比較は、`correct_state` の有効値を期待項目として、文字列包含で missing/extra を算出する。             | 実装済み |
+| GDE-07 | 正解状態との差分、または暗黙知タグの状況・判断・理由をもとに GPT-4o が先代の口調で 2-3 文のフィードバックを生成する。 | 実装済み |
+| GDE-08 | `/api/guide/tts` は OpenAI TTS `tts-1`、voice `nova` で音声を生成し、base64 MP3 を返す。                              | 実装済み |
+| GDE-09 | Guide の結果は `observation_logs` に `shop_id`, `scene_id`, `vision_result`, `llm_feedback` として保存する。          | 実装済み |
+| GDE-10 | `/app/guide/logs` は観察ログ履歴を表示する。                                                                          | 実装済み |
+| GDE-11 | 正解シーン登録画面は静的表示であり、実保存フォームはない。                                                            | モック   |
+| GDE-12 | 画像はクラウド Vision API に送信されるため、画面上でデモモードかつプライバシー保証なしと表示する。                    | 実装済み |
 
 ### 5.9 Agent
 
@@ -194,7 +194,7 @@ TSUGITE は、伝統工芸、旅館、老舗飲食などで言語化されにく
 
 Archive で作った `interviews` と `tacit_tags` が Agent の根拠になる。`tag_embeddings` がないタグは pgvector 検索対象にならない。
 
-Guide は `reference_scenes.correct_state` を正解状態として利用し、実行結果を `observation_logs` に保存する。`reference_scenes.source_tag_id` は Archive タグ由来の正解シーンを表現できるが、現状 UI では作成導線が未完成である。
+Guide は `reference_scenes.correct_state` を正解状態として利用し、実行結果を `observation_logs` に保存する。参照シーンが未登録の場合でも、Archive 由来の `tacit_tags` を Guide ソースとして選択し、状況・判断・理由を Vision/LLM フィードバックに渡せる。
 
 ## 7. API 要件
 

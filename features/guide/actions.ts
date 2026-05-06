@@ -2,6 +2,23 @@
 
 import { createClient } from '@/lib/supabase/server'
 
+export type ReferenceSceneRow = {
+  id: string
+  scene_name: string
+  correct_state: Record<string, unknown>
+  season: string | null
+  source_tag_id: string | null
+}
+
+export type TacitGuideTagRow = {
+  id: string
+  situation: string
+  judgment: string
+  reason: string
+  is_inferred: boolean
+  created_at: string
+}
+
 export type SaveObservationLogInput = {
   shopId: string
   sceneId: string | null
@@ -45,7 +62,7 @@ export async function getReferenceScenes(shopId: string) {
 
     const { data, error } = await supabase
       .from('reference_scenes')
-      .select('*')
+      .select('id, scene_name, correct_state, season, source_tag_id')
       .eq('shop_id', shopId)
       .order('created_at', { ascending: false })
 
@@ -54,12 +71,38 @@ export async function getReferenceScenes(shopId: string) {
       throw new Error('参照シーンの取得に失敗しました')
     }
 
-    return { success: true, data: data || [] }
+    return { success: true, data: (data || []) as ReferenceSceneRow[] }
   } catch (error) {
     console.error('Get reference scenes error:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : '参照シーンの取得に失敗しました',
+      data: [],
+    }
+  }
+}
+
+export async function getTacitGuideTags(shopId: string) {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('tacit_tags')
+      .select('id, situation, judgment, reason, is_inferred, created_at')
+      .eq('shop_id', shopId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Failed to fetch tacit guide tags:', error)
+      throw new Error('暗黙知タグの取得に失敗しました')
+    }
+
+    return { success: true, data: (data || []) as TacitGuideTagRow[] }
+  } catch (error) {
+    console.error('Get tacit guide tags error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '暗黙知タグの取得に失敗しました',
       data: [],
     }
   }

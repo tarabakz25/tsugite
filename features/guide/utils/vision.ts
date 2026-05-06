@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import type { GuideSourceTagContext } from '../types'
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '')
 
@@ -22,6 +23,7 @@ export type AnalyzeSceneResponse = {
 export async function analyzeSceneWithVision(
   imageDataUrl: string,
   sceneName: string,
+  sourceTag?: GuideSourceTagContext | null,
 ): Promise<{ items: string[]; rawDescription: string }> {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
@@ -29,8 +31,19 @@ export async function analyzeSceneWithVision(
     // Remove data URL prefix
     const base64Image = imageDataUrl.replace(/^data:image\/\w+;base64,/, '')
 
+    const sourceTagContext = sourceTag
+      ? `
+Archiveから抽出した暗黙知タグ:
+- 状況: ${sourceTag.situation}
+- 判断: ${sourceTag.judgment}
+- 理由: ${sourceTag.reason}
+
+この暗黙知タグに関係する配置、所作、状態、注意点が見える場合は優先して拾ってください。`
+      : ''
+
     const prompt = `この画像を分析し、見える物品や状態を日本語でリスト化してください。
 シーン: ${sceneName}
+${sourceTagContext}
 
 以下の形式で回答してください:
 - 物品1

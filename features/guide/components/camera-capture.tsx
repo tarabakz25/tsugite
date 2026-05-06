@@ -77,22 +77,22 @@ export default function CameraCapture({
 
   if (error) {
     return (
-      <div className="flex items-center justify-center bg-black text-white p-8 rounded-lg">
+      <div className="flex min-h-72 items-center justify-center rounded-lg bg-ink p-6 text-center text-white">
         <p>{error}</p>
       </div>
     )
   }
 
   return (
-    <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
-      <video ref={videoRef} className="w-full h-full object-cover" playsInline muted autoPlay />
+    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-ink sm:aspect-video">
+      <video ref={videoRef} className="h-full w-full object-cover" playsInline muted autoPlay />
       {!isReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+        <div className="absolute inset-0 flex items-center justify-center bg-ink/70 text-white">
           <p>カメラを初期化中...</p>
         </div>
       )}
       {isActive && isReady && (
-        <div className="absolute top-4 right-4 w-3 h-3 bg-red-600 rounded-full animate-pulse" />
+        <div className="absolute right-4 top-4 size-3 animate-pulse rounded-full bg-danger" />
       )}
     </div>
   )

@@ -8,6 +8,7 @@ import postgres from 'postgres'
 import { analyzeSceneWithVision, compareWithCorrectState } from '@/features/guide/utils/vision'
 import { generateGuideFeedback } from '@/features/guide/utils/llm'
 import { generateSpeech } from '@/features/guide/utils/tts'
+import type { GuideSourceTagContext } from '@/features/guide/types'
 import {
   generateEmbedding,
   searchSimilarTags,
@@ -157,30 +158,58 @@ app.post('/agent/tts', zValidator('json', ttsSchema), async (c) => {
   }
 })
 
+const guideSourceTagSchema = z.object({
+  id: z.string().uuid(),
+  situation: z.string().min(1),
+  judgment: z.string().min(1),
+  reason: z.string().min(1),
+})
+
+const guideAnalyzeSchema = z.object({
+  correctState: z.record(z.string(), z.unknown()).nullable().optional(),
+  imageDataUrl: z.string().min(1),
+  sceneName: z.string().min(1),
+  season: z.string().nullable().optional(),
+  sourceTag: guideSourceTagSchema.nullable().optional(),
+  sourceType: z.enum(['scene', 'tag']).optional(),
+})
+
 // Guide feature: Analyze scene
 app.post('/guide/analyze', async (c) => {
   try {
-    const body = await c.req.json()
-    const { imageDataUrl, sceneName, correctState, season } = body
+    const parsed = guideAnalyzeSchema.safeParse(await c.req.json())
 
-    if (!imageDataUrl || !sceneName || !correctState) {
-      return c.json({ error: 'Missing required fields' }, 400)
+    if (!parsed.success) {
+      return c.json({ error: 'Invalid guide analysis request' }, 400)
+    }
+
+    const { imageDataUrl, sceneName, correctState, season, sourceTag, sourceType } = parsed.data
+    const sourceTagContext: GuideSourceTagContext | null = sourceTag ?? null
+    const hasCorrectState = Boolean(correctState && Object.keys(correctState).length > 0)
+
+    if (!hasCorrectState && !sourceTagContext) {
+      return c.json({ error: 'Missing guide source context' }, 400)
     }
 
     // Step 1: Vision analysis
-    const visionResult = await analyzeSceneWithVision(imageDataUrl, sceneName)
+    const visionResult = await analyzeSceneWithVision(imageDataUrl, sceneName, sourceTagContext)
 
     // Step 2: Compare with correct state
-    const differences = compareWithCorrectState(visionResult.items, correctState)
+    const differences =
+      hasCorrectState && correctState
+        ? compareWithCorrectState(visionResult.items, correctState)
+        : { missing: [], extra: [] }
 
     // Step 3: Generate feedback
     const feedback = await generateGuideFeedback({
+      correctState: correctState ?? null,
       sceneName,
       season,
       observedItems: visionResult.items,
       missingItems: differences.missing,
       extraItems: differences.extra,
-      correctState,
+      sourceTag: sourceTagContext,
+      sourceType: sourceType ?? (sourceTagContext ? 'tag' : 'scene'),
     })
 
     return c.json({
