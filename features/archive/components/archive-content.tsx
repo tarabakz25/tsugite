@@ -61,15 +61,6 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
   return (
     <AppShell>
       <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-            Archive - 暗黙知の蓄積
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            インタビュー動画・音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。
-          </p>
-        </div>
-
         <Tabs
           activeValue={activeTab}
           className="w-full"

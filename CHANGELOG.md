@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- ページヘッダーのマークアップを統一
+  - `app/shop/agent/page.tsx`: `<section>` with `border-b border-zinc-200` を使用し、zinc色系・`font-semibold` に統一（従来の ink/washi・`font-bold` から変更）
+  - `app/successor/agent/page.tsx`: 同様に `<section>` with zinc色系・`font-semibold` に統一
+  - `app/successor/archive/page.tsx`: カスタム `<div>` 構造から標準の `<section> > <Container> > <h1>` パターンに変更。zinc色系に統一
+  - `app/shop/archive/page.tsx`: ページレベルに `<section>` ヘッダーを追加し、`ArchiveContent` コンポーネントから h1 ヘッダー部分を削除してコンテンツのみに専念
+
 ### Removed
 
 - `app/auth/signup/page.tsx` をプレースホルダーUIから `/login` へのredirectに変更。登録はGoogleOAuth一本のため

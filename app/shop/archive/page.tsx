@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import ArchiveContent from '@/features/archive/components/archive-content'
+import Container from '@/components/ui/container'
 import type { Interview, TacitTag } from '@/features/archive/types'
 import { ensureShopForProfile } from '@/lib/shops'
 
@@ -58,5 +59,19 @@ export default async function ArchivePage() {
     createdAt: new Date(row.created_at),
   }))
 
-  return <ArchiveContent interviews={interviews} tags={tags} />
+  return (
+    <>
+      <section className="flex flex-col gap-6 py-10">
+        <Container>
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+            Archive - 暗黙知の蓄積
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
+            インタビュー動画・音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。
+          </p>
+        </Container>
+      </section>
+      <ArchiveContent interviews={interviews} tags={tags} />
+    </>
+  )
 }

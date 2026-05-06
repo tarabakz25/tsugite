@@ -24,14 +24,14 @@ export default async function ShopAgentPage() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
-      <div className="border-b border-ink/10 bg-washi p-4">
+      <section className="border-b border-zinc-200 bg-white py-6 dark:border-zinc-800 dark:bg-zinc-950">
         <Container>
-          <h1 className="text-2xl font-bold text-ink">Agent - AI相談</h1>
-          <p className="mt-1 text-sm text-ink/60">
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">Agent - AI相談</h1>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             蓄積された暗黙知をもとに、店舗運営の疑問にお答えします。
           </p>
         </Container>
-      </div>
+      </section>
       <div className="flex-1 overflow-hidden">
         <Container className="h-full">
           <AgentChat shopId={shop.id} />

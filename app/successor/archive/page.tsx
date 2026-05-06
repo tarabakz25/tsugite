@@ -1,22 +1,23 @@
+import Container from '@/components/ui/container'
+
 export default function SuccessorArchivePage() {
   return (
-    <div className="space-y-8 p-6">
-      <div>
-        <p className="mb-1 text-xs font-medium uppercase tracking-widest text-ink-3">Archive</p>
-        <h1 className="text-2xl font-bold text-ink">暗黙知タグ閲覧</h1>
-        <p className="mt-2 text-sm text-ink-3">
+    <section className="flex flex-col gap-10 py-10">
+      <Container>
+        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">暗黙知タグ閲覧</h1>
+        <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
           店舗の先代が蓄積してきた判断基準・暗黙知を閲覧できます。Agent
           への質問の参考にしてください。
         </p>
-      </div>
 
-      {/* TODO: query tacit_tags for shops the successor has applied to,
-          once the applications <-> shop relationship is implemented. */}
-      <div className="rounded-2xl border border-washi-3 bg-washi-2 p-8 text-center">
-        <p className="text-sm text-ink-3">
-          応募中の店舗の暗黙知タグはここに表示されます（近日公開予定）。
-        </p>
-      </div>
-    </div>
+        {/* TODO: query tacit_tags for shops the successor has applied to,
+            once the applications <-> shop relationship is implemented. */}
+        <div className="mt-8 rounded-xl border border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            応募中の店舗の暗黙知タグはここに表示されます（近日公開予定）。
+          </p>
+        </div>
+      </Container>
+    </section>
   )
 }
