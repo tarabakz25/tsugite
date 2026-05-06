@@ -59,12 +59,6 @@ export default function SiteHeader() {
           />
         ) : (
           <nav className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm text-ink-3">
-            <Link className="hover:text-ink" href="/opportunities">
-              募集
-            </Link>
-            <Link className="hover:text-ink" href="/demo/ryokan">
-              デモ
-            </Link>
             {userId ? (
               <AuthenticatedNavLinks role={role} />
             ) : (

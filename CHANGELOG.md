@@ -23,6 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - `app/dashboard/settings/page.tsx`: ロール別デフォルトリダイレクト
   - `app/dashboard/settings/shop/page.tsx`, `members/page.tsx`, `profile/page.tsx`, `account/page.tsx`: 設定サブページ（既存フォームを再利用）
 
+### Changed
+
+- `package.json` の `dev` スクリプトに `--hostname 0.0.0.0` を追加。LAN経由（スマホ等）でのローカル開発テストを可能にするため
+
 ### Removed
 
 - `app/shop/` と `app/successor/` を完全削除。URL を `/dashboard` に一本化
@@ -39,8 +43,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `app/dashboard/layout.tsx`: `role ?? undefined` で `UserRole | null` → `'shop' | 'successor' | undefined` 型不一致を解消（`redirect()` 後の TypeScript narrowing 欠如を回避）
 - `app/dashboard/settings/layout.tsx`: `role as 'shop' | 'successor'` で同様の型不一致を解消
 - `app/dashboard/archive/page.tsx`, `archive/[id]/page.tsx`, `agent/page.tsx`: `ensureShopForProfile` 後の `shop` が possibly null の TS18047 エラーを `shop!.id` で解消（各ページで `redirect()` による非 null 保証済み）
-
-
 
 - `app/register/` を廃止し `app/onboarding/` に集約。オンボーディングフローを一箇所に統一
   - `app/register/shop/` → `app/onboarding/shop/`
