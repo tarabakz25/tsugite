@@ -1,4 +1,4 @@
-export default function ShopAccountSettingsPage() {
+export default function DashboardSettingsAccountPage() {
   return (
     <div className="mx-auto max-w-xl">
       <h2 className="mb-6 text-base font-medium text-zinc-700 dark:text-zinc-300">アカウント設定</h2>

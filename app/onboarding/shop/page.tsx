@@ -11,7 +11,7 @@ export default async function RegisterShopPage() {
 
   const role = parseUserRole(profile)
   if (!role) redirect('/onboarding/role')
-  if (role !== 'shop') redirect('/successor')
+  if (role !== 'shop') redirect('/dashboard')
 
   const sp = profile.shop_profile
 

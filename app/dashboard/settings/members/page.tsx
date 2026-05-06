@@ -1,4 +1,4 @@
-export default function ShopMembersSettingsPage() {
+export default function DashboardSettingsMembersPage() {
   return (
     <div className="mx-auto max-w-xl">
       <h2 className="mb-6 text-base font-medium text-zinc-700 dark:text-zinc-300">メンバー管理</h2>

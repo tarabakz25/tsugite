@@ -1,8 +1,14 @@
+import { redirect } from 'next/navigation'
+
 import ShopProfileForm from '@/features/register/shop-profile-form'
 import { getCurrentProfile } from '@/lib/get-profile'
+import { parseUserRole } from '@/lib/roles'
 
-export default async function ShopInfoSettingsPage() {
+export default async function DashboardSettingsShopPage() {
   const profile = await getCurrentProfile()
+  const role = parseUserRole(profile)
+  if (role !== 'shop') redirect('/dashboard/settings/profile')
+
   const meta = profile?.shop_profile ?? {}
 
   return (
