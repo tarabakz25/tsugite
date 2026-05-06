@@ -4,34 +4,29 @@ import GuideInterface from '@/features/guide/components/guide-interface'
 import { getReferenceScenes } from '@/features/guide/actions'
 import AppShell from '@/components/ui/app-shell'
 import Container from '@/components/ui/container'
-import { ensureShopForProfile } from '@/lib/shops'
+import { parseUserRole } from '@/lib/roles'
 
-export default async function GuidePage() {
+export default async function DashboardGuidePage() {
   const supabase = await createClient()
 
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  if (!user) redirect('/login?returnTo=/dashboard/guide')
 
-  if (!user) {
-    redirect('/login?returnTo=/shop/guide')
-  }
-
-  // Get user's profile to find shop
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
-  if (!profile || profile.role !== 'shop') {
-    redirect('/onboarding/role')
-  }
+  const role = parseUserRole(profile)
 
-  const shop = await ensureShopForProfile(supabase, user.id, profile.shop_profile)
+  // Guide is successor-only
+  if (role !== 'successor') redirect('/dashboard')
 
-  if (!shop) {
-    redirect('/onboarding/shop')
-  }
+  // TODO: resolve the shop linked to this successor once the
+  //       applications <-> shop relationship is implemented.
+  //       Using a mock shop ID for MVP.
+  const mockShopId = '00000000-0000-0000-0000-000000000001'
 
-  // Get reference scenes
-  const scenesResult = await getReferenceScenes(shop.id)
+  const scenesResult = await getReferenceScenes(mockShopId)
   const scenes = scenesResult.success
     ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase returns generic Record type
       scenesResult.data.map((scene: any) => ({
@@ -45,7 +40,7 @@ export default async function GuidePage() {
   return (
     <AppShell>
       <Container className="py-8">
-        <GuideInterface shopId={shop.id} scenes={scenes} />
+        <GuideInterface shopId={mockShopId} scenes={scenes} />
       </Container>
     </AppShell>
   )

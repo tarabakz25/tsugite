@@ -12,10 +12,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `proxy.ts` を `middleware.ts` にリネームし `export default` に変更。ファイル名・エクスポート形式が誤っていたため Next.js にミドルウェアとして認識されず、セッションリフレッシュと保護ルートの未認証リダイレクトが一切動いていなかった
 - `app/auth/callback/route.ts`: `request.url` の origin が dev server のバインドアドレス `0.0.0.0:3000` になる問題を修正。`x-forwarded-host` → `host` ヘッダーの優先順で origin を組み立てるよう変更し、ローカル開発時のログイン後リダイレクトが本番 URL に飛ぶ問題を解消
+### Added
+
+- `app/dashboard/` — `/shop/*` と `/successor/*` を `/dashboard/*` に統合。ロール（`shop` / `successor`）で表示・ナビを分岐させる単一ルートを新設
+  - `app/dashboard/layout.tsx`: ロール別サイドナビ（shop: 概要/プロフィール/Archive/Agent/設定、successor: +Guide）
+  - `app/dashboard/page.tsx`: ロール別ダッシュボードトップ
+  - `app/dashboard/profile/page.tsx`: ロール別プロフィールフォーム
+  - `app/dashboard/archive/page.tsx`: ロール別（shop: ArchiveContent、successor: タグ閲覧スタブ）
+  - `app/dashboard/archive/[id]/page.tsx`: shop 専用インタビュー詳細（successor は `/dashboard/archive` へリダイレクト）
+  - `app/dashboard/archive/[id]/_components/transcribe-button.tsx`: 文字起こしボタン（shop 専用詳細ページ用）
+  - `app/dashboard/guide/page.tsx`: successor 専用 Guide ページ（shop は `/dashboard` にリダイレクト）
+  - `app/dashboard/agent/page.tsx`: ロール別 Agent（shop: ensureShopForProfile、successor: mockShopId で仮置き）
+  - `app/dashboard/settings/layout.tsx`: ロール別タブ（shop: 店舗情報/メンバー/アカウント、successor: プロフィール/アカウント）
+  - `app/dashboard/settings/page.tsx`: ロール別デフォルトリダイレクト
+  - `app/dashboard/settings/shop/page.tsx`, `members/page.tsx`, `profile/page.tsx`, `account/page.tsx`: 設定サブページ（既存フォームを再利用）
 
 ### Removed
 
-- `app/auth/signup/page.tsx` をプレースホルダーUIから `/login` へのredirectに変更。登録はGoogleOAuth一本のため
+- `app/shop/` と `app/successor/` を完全削除。URL を `/dashboard` に一本化
+
+### Changed
+
+- `lib/supabase/proxy.ts`: `PROTECTED_PREFIXES` を `['/dashboard', '/register', '/onboarding']` に更新（旧 `/shop`, `/successor`）
+- `app/auth/callback/route.ts`: ログイン後リダイレクト先を `/dashboard` に変更（旧ロール別 `/shop` / `/successor`）
+- `app/onboarding/role/page.tsx`, `shop/page.tsx`, `successor/page.tsx`: ロール確定・不一致時のリダイレクト先を `/dashboard` に変更
+- `features/register/shop-actions.ts`, `successor-actions.ts`: 登録完了後のリダイレクト先を `/dashboard` に変更
+
+### Fixed
+
+- `app/dashboard/layout.tsx`: `role ?? undefined` で `UserRole | null` → `'shop' | 'successor' | undefined` 型不一致を解消（`redirect()` 後の TypeScript narrowing 欠如を回避）
+- `app/dashboard/settings/layout.tsx`: `role as 'shop' | 'successor'` で同様の型不一致を解消
+- `app/dashboard/archive/page.tsx`, `archive/[id]/page.tsx`, `agent/page.tsx`: `ensureShopForProfile` 後の `shop` が possibly null の TS18047 エラーを `shop!.id` で解消（各ページで `redirect()` による非 null 保証済み）
+
+
 
 - `app/register/` を廃止し `app/onboarding/` に集約。オンボーディングフローを一箇所に統一
   - `app/register/shop/` → `app/onboarding/shop/`

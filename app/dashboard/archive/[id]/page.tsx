@@ -5,9 +5,10 @@ import { createClient } from '@/lib/supabase/server'
 import { ensureShopForProfile } from '@/lib/shops'
 import { isAudioStoragePath } from '@/features/archive/utils/media'
 import type { TacitTag } from '@/features/archive/types'
+import { parseUserRole } from '@/lib/roles'
 import TranscribeButton from './_components/transcribe-button'
 
-export default async function ShopArchiveDetailPage({
+export default async function DashboardArchiveDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
@@ -22,18 +23,25 @@ export default async function ShopArchiveDetailPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('shop_profile')
+    .select('*')
     .eq('id', user.id)
     .maybeSingle()
 
+  const role = parseUserRole(profile)
+
+  // Archive detail is shop-only; successors see the stub list page
+  if (role !== 'shop') redirect('/dashboard/archive')
+
   const shop = await ensureShopForProfile(supabase, user.id, profile?.shop_profile)
-  if (!shop) redirect('/shop')
+  if (!shop) redirect('/dashboard')
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- redirect() above guarantees non-null
+  const shopId = shop!.id
 
   const { data: interview } = await supabase
     .from('interviews')
     .select('*')
     .eq('id', id)
-    .eq('shop_id', shop.id)
+    .eq('shop_id', shopId)
     .maybeSingle()
 
   if (!interview) notFound()
@@ -73,7 +81,7 @@ export default async function ShopArchiveDetailPage({
           </p>
         </div>
         <Link
-          href="/shop/archive"
+          href="/dashboard/archive"
           className="text-sm text-ink-3 underline underline-offset-4 hover:text-ink"
         >
           ← 一覧に戻る

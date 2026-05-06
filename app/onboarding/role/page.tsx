@@ -15,8 +15,7 @@ export default async function OnboardingRolePage({ searchParams }: PageProps) {
   if (!profile) redirect('/login')
 
   const role = parseUserRole(profile)
-  if (role === 'shop') redirect('/shop')
-  if (role === 'successor') redirect('/successor')
+  if (role === 'shop' || role === 'successor') redirect('/dashboard')
 
   return (
     <main className="flex flex-1 flex-col bg-zinc-50 py-16 dark:bg-black">
