@@ -121,6 +121,76 @@ export async function createInterviewUpload(
   }
 }
 
+export type DeleteTacitTagState = {
+  error?: 'not_authenticated' | 'no_shop' | 'not_found' | 'db_error'
+  success?: boolean
+}
+
+export async function deleteTacitTag(tagId: string): Promise<DeleteTacitTagState> {
+  const { error, shop, supabase } = await getCurrentShop()
+  if (error) return { error }
+  if (!shop) return { error: 'no_shop' }
+
+  const { data: existing, error: selectError } = await supabase
+    .from('tacit_tags')
+    .select('id')
+    .eq('id', tagId)
+    .eq('shop_id', shop.id)
+    .maybeSingle()
+
+  if (selectError) return { error: 'db_error' }
+  if (!existing) return { error: 'not_found' }
+
+  const { error: deleteError } = await supabase
+    .from('tacit_tags')
+    .delete()
+    .eq('id', tagId)
+    .eq('shop_id', shop.id)
+
+  if (deleteError) return { error: 'db_error' }
+
+  return { success: true }
+}
+
+export type DeleteInterviewState = {
+  error?: 'not_authenticated' | 'no_shop' | 'not_found' | 'db_error'
+  success?: boolean
+}
+
+export async function deleteInterview(interviewId: string): Promise<DeleteInterviewState> {
+  const { error, shop, supabase } = await getCurrentShop()
+  if (error) return { error }
+  if (!shop) return { error: 'no_shop' }
+
+  const { data: row, error: selectError } = await supabase
+    .from('interviews')
+    .select('id, storage_path')
+    .eq('id', interviewId)
+    .eq('shop_id', shop.id)
+    .maybeSingle()
+
+  if (selectError) return { error: 'db_error' }
+  if (!row) return { error: 'not_found' }
+
+  const { error: storageError } = await supabase.storage
+    .from(INTERVIEW_STORAGE_BUCKET)
+    .remove([row.storage_path])
+
+  if (storageError) {
+    console.warn('Interview storage delete skipped:', storageError.message)
+  }
+
+  const { error: deleteError } = await supabase
+    .from('interviews')
+    .delete()
+    .eq('id', interviewId)
+    .eq('shop_id', shop.id)
+
+  if (deleteError) return { error: 'db_error' }
+
+  return { success: true }
+}
+
 export async function completeInterviewUpload(
   input: CompleteInterviewUploadInput,
 ): Promise<UploadVideoState> {

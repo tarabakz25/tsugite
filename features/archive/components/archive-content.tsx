@@ -8,6 +8,7 @@ import Tabs from '@/components/ui/tabs'
 import VideoUploadForm from '@/features/archive/components/video-upload-form'
 import InterviewsList from '@/features/archive/components/interviews-list'
 import TacitTagsList from '@/features/archive/components/tacit-tags-list'
+import { deleteInterview, deleteTacitTag } from '@/features/archive/actions'
 import type { Interview, TacitTag } from '@/features/archive/types'
 
 type ArchiveContentProps = {
@@ -15,8 +16,13 @@ type ArchiveContentProps = {
   tags: TacitTag[]
 }
 
-export default function ArchiveContent({ interviews, tags }: ArchiveContentProps) {
+export default function ArchiveContent({
+  interviews: initialInterviews,
+  tags: initialTags,
+}: ArchiveContentProps) {
   const [activeTab, setActiveTab] = useState('upload')
+  const [interviews, setInterviews] = useState(initialInterviews)
+  const [tags, setTags] = useState(initialTags)
 
   const handleProcess = async (interviewId: string) => {
     try {
@@ -58,6 +64,44 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
     }
   }
 
+  const handleDeleteTag = async (tagId: string) => {
+    const result = await deleteTacitTag(tagId)
+    if (result.error) {
+      const errorMessages: Record<string, string> = {
+        not_authenticated: 'ログインが必要です',
+        no_shop: '店舗情報が見つかりません',
+        not_found: 'タグが見つかりません',
+        db_error: 'データベースエラーが発生しました',
+      }
+      alert(errorMessages[result.error] ?? '削除に失敗しました')
+      return
+    }
+    setTags((prev) => prev.filter((tag) => tag.id !== tagId))
+  }
+
+  const handleDeleteInterview = async (interviewId: string) => {
+    const result = await deleteInterview(interviewId)
+    if (result.error) {
+      const errorMessages: Record<string, string> = {
+        not_authenticated: 'ログインが必要です',
+        no_shop: '店舗情報が見つかりません',
+        not_found: 'インタビューが見つかりません',
+        db_error: 'データベースエラーが発生しました',
+      }
+      alert(errorMessages[result.error] ?? '削除に失敗しました')
+      return
+    }
+    setInterviews((prev) => prev.filter((row) => row.id !== interviewId))
+    setTags((prev) =>
+      prev.map((tag) => {
+        if (tag.interviewId !== interviewId) {
+          return tag
+        }
+        return { ...tag, interviewId: null }
+      }),
+    )
+  }
+
   return (
     <AppShell>
       <div className="mx-auto max-w-7xl px-4 py-8">
@@ -92,7 +136,11 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
                   <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                     インタビュー一覧 ({interviews.length}件)
                   </h2>
-                  <InterviewsList interviews={interviews} onProcess={handleProcess} />
+                  <InterviewsList
+                    interviews={interviews}
+                    onProcess={handleProcess}
+                    onDelete={handleDeleteInterview}
+                  />
                 </>
               ),
               label: 'インタビュー一覧',
@@ -104,7 +152,7 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
                   <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                     暗黙知タグ ({tags.length}件)
                   </h2>
-                  <TacitTagsList tags={tags} />
+                  <TacitTagsList tags={tags} onDelete={handleDeleteTag} />
                 </>
               ),
               label: '暗黙知タグ',

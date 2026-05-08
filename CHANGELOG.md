@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- 暗黙知タグの手動削除機能を追加
+  - `features/archive/actions.ts`: `deleteTacitTag` Server Action を追加。shop owner 確認後に `tacit_tags` レコードを削除（`tag_embeddings` は `ON DELETE CASCADE` で自動削除）
+  - `features/archive/components/tacit-tags-list.tsx`: 各タグカードに削除ボタンを追加。クリック後に確認UI（「本当に削除しますか？」）を表示し、誤操作を防止
+  - `features/archive/components/archive-content.tsx`: `handleDeleteTag` ハンドラーを追加し `TacitTagsList` の `onDelete` に接続
+- インタビュー（レコード＋Storage メディア）の手動削除を追加。暗黙知タグは DB の `ON DELETE SET NULL` のまま残し、`interview_id` のみ解除される
+  - `features/archive/actions.ts`: `deleteInterview` Server Action
+  - `features/archive/components/archive-content.tsx`: インタビュー一覧のローカル state と `handleDeleteInterview`、`InterviewsList` の `onDelete` 接続
+
 ### Fixed
 
 - `proxy.ts` を `middleware.ts` にリネームし `export default` に変更。ファイル名・エクスポート形式が誤っていたため Next.js にミドルウェアとして認識されず、セッションリフレッシュと保護ルートの未認証リダイレクトが一切動いていなかった
