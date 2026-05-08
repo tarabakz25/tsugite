@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Card from '@/components/ui/card'
 import Button from '@/components/ui/button'
 import StatusBadge from '@/components/ui/status-badge'
+import GridList from '@/components/layout/grid-list'
 
 import type { Interview } from '@/features/archive/types'
 
@@ -51,26 +52,26 @@ export default function InterviewsList({ interviews, onProcess, onDelete }: Inte
 
   if (interviews.length === 0) {
     return (
-      <div className="py-8 text-center text-ink/50">
+      <div className="py-12 text-center text-ink-3">
         まだインタビュー動画・音声がアップロードされていません。
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <GridList columns={2}>
       {interviews.map((interview) => (
-        <Card key={interview.id} className="flex flex-col gap-4">
+        <Card key={interview.id} className="flex h-full flex-col gap-4 p-5">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-ink">
                 インタビュー #{interview.id.slice(0, 8)}
               </h3>
-              <p className="mt-1 text-xs text-ink/50">
+              <p className="mt-1 text-xs text-ink-3">
                 アップロード日時: {new Date(interview.createdAt).toLocaleString('ja-JP')}
               </p>
               {interview.durationSec && (
-                <p className="text-xs text-ink/50">
+                <p className="text-xs text-ink-3">
                   長さ: {Math.floor(interview.durationSec / 60)}分{interview.durationSec % 60}秒
                 </p>
               )}
@@ -80,12 +81,12 @@ export default function InterviewsList({ interviews, onProcess, onDelete }: Inte
 
           {interview.transcript && (
             <div className="border-t border-washi-3 pt-3">
-              <p className="mb-2 text-xs font-medium text-ink/50">文字起こし</p>
-              <p className="line-clamp-3 text-sm text-ink">{interview.transcript}</p>
+              <p className="mb-2 text-xs font-medium text-ink-3">文字起こし</p>
+              <p className="line-clamp-3 text-sm text-ink-2">{interview.transcript}</p>
             </div>
           )}
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
             {!interview.transcript && (
               <Button
                 size="sm"
@@ -97,10 +98,10 @@ export default function InterviewsList({ interviews, onProcess, onDelete }: Inte
             )}
 
             {onDelete && (
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex flex-wrap items-center gap-2">
                 {confirmId === interview.id ? (
                   <>
-                    <span className="text-xs text-ink/60">本当に削除しますか？</span>
+                    <span className="text-xs text-ink-3">本当に削除しますか？</span>
                     <Button
                       size="sm"
                       variant="danger"
@@ -128,6 +129,6 @@ export default function InterviewsList({ interviews, onProcess, onDelete }: Inte
           </div>
         </Card>
       ))}
-    </div>
+    </GridList>
   )
 }

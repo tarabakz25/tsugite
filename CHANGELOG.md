@@ -17,6 +17,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - インタビュー（レコード＋Storage メディア）の手動削除を追加。暗黙知タグは DB の `ON DELETE SET NULL` のまま残し、`interview_id` のみ解除される
   - `features/archive/actions.ts`: `deleteInterview` Server Action
   - `features/archive/components/archive-content.tsx`: インタビュー一覧のローカル state と `handleDeleteInterview`、`InterviewsList` の `onDelete` 接続
+- `components/layout/grid-list.tsx`: Archive インタビュー一覧用のレスポンシブグリッド（`columns` 1〜3）
+
+### Changed
+
+- `features/archive/components/interviews-list.tsx`: `GridList` 2列レイアウトと develop 側の ink トークン表記を維持しつつ、削除確認UIを統合
 
 ### Fixed
 
