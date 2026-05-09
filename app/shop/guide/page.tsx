@@ -1,30 +1,24 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import GuideInterface from '@/features/guide/components/guide-interface'
 import { getReferenceScenes } from '@/features/guide/actions'
 import AppShell from '@/components/ui/app-shell'
 import Container from '@/components/ui/container'
+import { getServerAuthSession } from '@/lib/get-profile'
 import { ensureShopForProfile } from '@/lib/shops'
 
 export default async function GuidePage() {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const session = await getServerAuthSession()
+  if (!session) {
     redirect('/login?returnTo=/shop/guide')
   }
 
-  // Get user's profile to find shop
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+  const { supabase, profile } = session
 
-  if (!profile || profile.role !== 'shop') {
+  if (!profile.role || profile.role !== 'shop') {
     redirect('/onboarding/role')
   }
 
-  const shop = await ensureShopForProfile(supabase, user.id, profile.shop_profile)
+  const shop = await ensureShopForProfile(supabase, profile.id, profile.shop_profile)
 
   if (!shop) {
     redirect('/onboarding/shop')

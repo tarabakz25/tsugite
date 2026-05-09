@@ -2,24 +2,15 @@ import { redirect } from 'next/navigation'
 
 import AgentChat from '@/features/agent/components/agent-chat'
 import Container from '@/components/ui/container'
-import { createClient } from '@/lib/supabase/server'
+import { getServerAuthSession } from '@/lib/get-profile'
 import { ensureShopForProfile } from '@/lib/shops'
 
 export default async function ShopAgentPage() {
-  const supabase = await createClient()
+  const session = await getServerAuthSession()
+  if (!session) redirect('/login?returnTo=/shop/agent')
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login?returnTo=/shop/agent')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('shop_profile')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  const shop = await ensureShopForProfile(supabase, user.id, profile?.shop_profile)
+  const { supabase, user, profile } = session
+  const shop = await ensureShopForProfile(supabase, user.id, profile.shop_profile)
   if (!shop) redirect('/shop')
 
   return (

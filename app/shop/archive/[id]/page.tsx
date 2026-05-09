@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
-import { createClient } from '@/lib/supabase/server'
+import { getServerAuthSession } from '@/lib/get-profile'
 import { ensureShopForProfile } from '@/lib/shops'
 import { isAudioStoragePath } from '@/features/archive/utils/media'
 import type { TacitTag } from '@/features/archive/types'
@@ -13,20 +13,11 @@ export default async function ShopArchiveDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
+  const session = await getServerAuthSession()
+  if (!session) redirect('/login')
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('shop_profile')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  const shop = await ensureShopForProfile(supabase, user.id, profile?.shop_profile)
+  const { supabase, user, profile } = session
+  const shop = await ensureShopForProfile(supabase, user.id, profile.shop_profile)
   if (!shop) redirect('/shop')
 
   const { data: interview } = await supabase

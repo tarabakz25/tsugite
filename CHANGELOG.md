@@ -10,8 +10,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `lib/get-profile.ts`: `getServerAuthSession`（`React.cache` で同一リクエスト内の Supabase 認証・プロフィール取得を一度だけ実行）を追加。店/`successor` レイアウトと各子ページの二重 `getUser` / `profiles` 往復を削減
+- `app/shop/loading.tsx` / `app/successor/loading.tsx`: ルート遷移時に本文エリアへ即時のスケルトンを表示し、体感待ち時間を抑える
 - `features/archive/actions.ts`: インタビュー削除用 `deleteInterview`（ストレージ上の音声・動画削除後に DB 削除）および暗黙知タグ削除用 `deleteTacitTag`（埋め込み行を先に削除してからタグ削除）を追加
 - `features/archive/components/interviews-list.tsx` / `tacit-tags-list.tsx`: 各一覧に削除ボタン（確認ダイアログ付き）を追加。削除成功後は `router.refresh()` でサーバーデータのみ再取得し、Archive のタブ選択を維持したまま一覧を更新する
+
+### Changed
+
+- `app/shop/layout.tsx` / `app/successor/layout.tsx`: メール表示用に重複していた `createClient` + `getUser` を廃止し、`getServerAuthSession` に統合
+- `app/shop/archive/page.tsx` / `archive/[id]/page.tsx` / `agent/page.tsx` / `guide/page.tsx`: 上記セッション取得に切り替えて DB ラウンドトリップを削減
 
 ### Fixed
 
