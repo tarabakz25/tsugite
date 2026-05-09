@@ -1,25 +1,16 @@
 import { redirect } from 'next/navigation'
 
-import { createClient } from '@/lib/supabase/server'
 import ArchiveContent from '@/features/archive/components/archive-content'
 import type { Interview, TacitTag } from '@/features/archive/types'
+import { getServerAuthSession } from '@/lib/get-profile'
 import { ensureShopForProfile } from '@/lib/shops'
 
 export default async function ArchivePage() {
-  const supabase = await createClient()
+  const session = await getServerAuthSession()
+  if (!session) redirect('/login')
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('shop_profile')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  const shop = await ensureShopForProfile(supabase, user.id, profile?.shop_profile)
+  const { supabase, user, profile } = session
+  const shop = await ensureShopForProfile(supabase, user.id, profile.shop_profile)
 
   if (!shop) redirect('/shop')
 
