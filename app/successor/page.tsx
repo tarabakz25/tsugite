@@ -5,7 +5,7 @@ import Container from '@/components/ui/container'
 
 const features = [
   {
-    title: 'Archive閲覧',
+    title: '記録閲覧',
     description: '先代が残した技術の記録を動画とタグで詳しく学びます。',
     href: '/successor/archive',
     icon: Video,
@@ -13,7 +13,7 @@ const features = [
     bg: 'bg-blue-50',
   },
   {
-    title: 'Agentに相談',
+    title: '相談する',
     description: '現場で困ったとき、蓄積されたデータから先代の口調でアドバイスを貰えます。',
     href: '/successor/agent',
     icon: MessageSquare,

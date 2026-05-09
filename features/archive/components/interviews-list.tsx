@@ -58,12 +58,8 @@ export default function InterviewsList({ interviews, onProcess }: InterviewsList
 
           {interview.transcript && (
             <div className="border-t border-washi-3 pt-3">
-              <p className="text-xs font-medium text-ink-3 mb-2">
-                文字起こし
-              </p>
-              <p className="text-sm text-ink-2 line-clamp-3">
-                {interview.transcript}
-              </p>
+              <p className="text-xs font-medium text-ink-3 mb-2">文字起こし</p>
+              <p className="text-sm text-ink-2 line-clamp-3">{interview.transcript}</p>
             </div>
           )}
 

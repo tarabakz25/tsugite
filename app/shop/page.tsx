@@ -11,19 +11,19 @@ const stats = [
 
 const quickActions = [
   {
-    title: 'Archive - 暗黙知を記録',
+    title: '記録 - 暗黙知を残す',
     description: '現場の作業を動画で撮影し、先代の技術をデータ化します。',
     href: '/shop/archive',
     icon: Video,
   },
   {
-    title: 'Guide - AI弟子で確認',
+    title: '指南 - AI弟子で確認',
     description: 'カメラをかざして、自分の所作が正しいかリアルタイムで判定します。',
     href: '/shop/guide',
     icon: BookOpen,
   },
   {
-    title: 'Agent - AIに相談',
+    title: '相談 - AIに質問',
     description: '蓄積された暗黙知ベースで、現場の疑問をAIに質問できます。',
     href: '/shop/agent',
     icon: MessageSquare,

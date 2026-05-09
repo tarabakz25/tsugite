@@ -41,7 +41,7 @@ export default async function AgentPage() {
               <div className="max-w-md rounded-lg border border-washi-3 bg-white p-6">
                 <h2 className="text-lg font-semibold text-ink">接続先の店舗が未設定です</h2>
                 <p className="mt-2 text-sm text-ink-3">
-                  店舗との紐づきが登録されると、その店舗の暗黙知タグを参照してAgentに相談できます。
+                  店舗との紐づきが登録されると、その店舗の暗黙知タグを参照して相談できます。
                 </p>
               </div>
             </div>

@@ -66,7 +66,7 @@ export default async function ShopArchiveDetailPage({
     <div className="space-y-8 p-6">
       <div className="flex items-start justify-between">
         <div>
-          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-shu">Archive</p>
+          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-shu">記録</p>
           <h1 className="text-2xl font-bold text-ink">インタビュー #{id.slice(0, 8)}</h1>
           <p className="mt-1 text-sm text-ink-3">
             {new Date(interview.created_at).toLocaleString('ja-JP')}

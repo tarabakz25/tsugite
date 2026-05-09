@@ -149,7 +149,7 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
         <p className="text-sumi-600">
           参照シーンが登録されていません。
           <br />
-          まずArchive機能でシーンを作成してください。
+          まず記録機能でシーンを作成してください。
         </p>
       </Card>
     )
@@ -158,7 +158,7 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
   return (
     <PageContainer>
       <PageHeader
-        title="Guide - AI弟子モード"
+        title="指南 - AI弟子モード"
         description="カメラをかざして、先代の所作との差分を確認しましょう"
         rightContent={getStatusBadge()}
       />
@@ -168,7 +168,8 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
           <p className="text-sm text-warning flex items-center gap-2">
             <span className="text-base">⚠️</span>
             <span>
-              <strong>デモモード:</strong> 画像はクラウドのVision APIに送信されます。プライバシー保証はありません。
+              <strong>デモモード:</strong> 画像はクラウドのVision
+              APIに送信されます。プライバシー保証はありません。
             </span>
           </p>
         </Card>
@@ -181,7 +182,9 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
               <CameraCapture onCapture={handleCapture} captureInterval={2000} isActive={isActive} />
               {isActive && (
                 <div className="absolute top-4 left-4">
-                  <Badge tone="success" className="animate-pulse shadow-md">REC</Badge>
+                  <Badge tone="success" className="animate-pulse shadow-md">
+                    REC
+                  </Badge>
                 </div>
               )}
             </Card>
@@ -197,7 +200,9 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-ink-3 mb-1.5 ml-0.5">シーンを選択</label>
+                  <label className="block text-xs font-medium text-ink-3 mb-1.5 ml-0.5">
+                    シーンを選択
+                  </label>
                   <select
                     value={selectedScene?.id || ''}
                     onChange={(e) => {
@@ -239,7 +244,9 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
             </Card>
 
             <Card className="p-5 bg-washi-2 border-none">
-              <h4 className="text-xs font-bold text-ink-3 uppercase tracking-wider mb-3">ガイドの使いかた</h4>
+              <h4 className="text-xs font-bold text-ink-3 uppercase tracking-wider mb-3">
+                ガイドの使いかた
+              </h4>
               <ul className="text-xs text-ink-2 space-y-2.5">
                 <li className="flex gap-2">
                   <span className="text-shu">1.</span>

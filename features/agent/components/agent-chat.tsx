@@ -196,7 +196,6 @@ export default function AgentChat({ shopId }: AgentChatProps) {
             </div>
           ))}
 
-
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <div className="flex justify-start">
               <div className="bg-white border border-washi-3 rounded-2xl rounded-tl-none p-4 shadow-sm">
@@ -215,7 +214,7 @@ export default function AgentChat({ shopId }: AgentChatProps) {
 
       {error && (
         <div className="border-t border-danger/20 bg-danger-bg px-4 py-3 text-sm text-danger">
-          Agent の応答生成に失敗しました。ログイン状態と店舗へのアクセス権を確認してください。
+          相談機能の応答生成に失敗しました。ログイン状態と店舗へのアクセス権を確認してください。
         </div>
       )}
 

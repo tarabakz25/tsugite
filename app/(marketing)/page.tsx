@@ -24,7 +24,7 @@ export default function LandingPage() {
             見て覚えろ、をAIで残して継ぐ
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-3">
-            Archiveで先代の判断を残し、Guideで現場の所作を判定し、Agentで迷った瞬間に相談する。
+            記録で先代の判断を残し、指南で現場の所作を判定し、相談で迷った瞬間に聞ける。
             職人・旅館・老舗飲食——言語化されてこなかった技と判断を、次の世代へ渡す。
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
@@ -46,17 +46,15 @@ export default function LandingPage() {
           </h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <Card className="p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-4">
-                Archive
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-4">記録</p>
               <h3 className="mt-3 text-lg font-semibold text-ink">先代の判断を残す</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-3">
                 先代へのインタビュー動画から、状況・判断・理由の3層タグを自動抽出します。
-                蓄積した暗黙知はGuideとAgentの原資になります。
+                蓄積した暗黙知は指南と相談の原資になります。
               </p>
             </Card>
             <Card className="p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-4">Guide</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-4">指南</p>
               <h3 className="mt-3 text-lg font-semibold text-ink">現場の所作を判定する</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-3">
                 正解の所作と現場をリアルタイムで比較し、ズレた点だけを短く返します。
@@ -64,10 +62,10 @@ export default function LandingPage() {
               </p>
             </Card>
             <Card className="p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-4">Agent</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-4">相談</p>
               <h3 className="mt-3 text-lg font-semibold text-ink">迷った瞬間に相談する</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-3">
-                Archiveから抽出した暗黙知を出典に、先代の判断を再現するAIに相談できます。
+                記録から抽出した暗黙知を出典に、先代の判断を再現するAIに相談できます。
                 「あの時どうしてたっけ」をいつでも引き出せます。
               </p>
             </Card>
@@ -86,11 +84,13 @@ export default function LandingPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-4">
                 店主・先代
               </p>
-              <h3 className="mt-3 text-xl font-semibold text-ink">暗黙知を蓄積して後継者を育てる</h3>
+              <h3 className="mt-3 text-xl font-semibold text-ink">
+                暗黙知を蓄積して後継者を育てる
+              </h3>
               <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink-3">
-                <li>— インタビュー動画をArchiveに登録</li>
-                <li>— 正解シーンをGuideに設定</li>
-                <li>— 後継者からの相談にAgentが自動応答</li>
+                <li>— インタビュー動画を記録に登録</li>
+                <li>— 正解シーンを指南に設定</li>
+                <li>— 後継者からの相談に相談機能が自動応答</li>
               </ul>
               <div className="mt-6">
                 <Link
@@ -107,9 +107,9 @@ export default function LandingPage() {
               </p>
               <h3 className="mt-3 text-xl font-semibold text-ink">現場で学ぶ</h3>
               <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink-3">
-                <li>— Archiveで先代の考え方を事前に学ぶ</li>
-                <li>— Guideで現場の所作をリアルタイム確認</li>
-                <li>— Agentで判断に迷ったとき即相談</li>
+                <li>— 記録で先代の考え方を事前に学ぶ</li>
+                <li>— 指南で現場の所作をリアルタイム確認</li>
+                <li>— 相談で判断に迷ったとき即相談</li>
               </ul>
             </Card>
           </div>

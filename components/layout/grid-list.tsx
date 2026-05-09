@@ -7,11 +7,7 @@ type GridListProps = {
   columns?: 1 | 2 | 3 | 4
 }
 
-export default function GridList({
-  children,
-  className,
-  columns = 3,
-}: GridListProps) {
+export default function GridList({ children, className, columns = 3 }: GridListProps) {
   const columnClasses = {
     1: 'grid-cols-1',
     2: 'grid-cols-1 sm:grid-cols-2',
@@ -19,9 +15,5 @@ export default function GridList({
     4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
   }
 
-  return (
-    <div className={cn('grid gap-6', columnClasses[columns], className)}>
-      {children}
-    </div>
-  )
+  return <div className={cn('grid gap-6', columnClasses[columns], className)}>{children}</div>
 }

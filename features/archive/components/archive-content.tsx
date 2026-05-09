@@ -64,7 +64,7 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
     <AppShell>
       <PageContainer>
         <PageHeader
-          title="Archive - 暗黙知の蓄積"
+          title="記録 - 暗黙知の蓄積"
           description="インタビュー動画・音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。"
         />
 

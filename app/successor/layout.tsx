@@ -7,8 +7,8 @@ import { createClient } from '@/lib/supabase/server'
 
 const SUCCESSOR_NAV = [
   { href: '/successor', label: '概要' },
-  { href: '/successor/archive', label: 'Archive閲覧' },
-  { href: '/successor/agent', label: 'Agent - 先代に相談' },
+  { href: '/successor/archive', label: '記録閲覧' },
+  { href: '/successor/agent', label: '相談 - 先代に相談' },
 ] as const
 
 export default async function SuccessorSectionLayout({

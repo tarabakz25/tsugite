@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/server'
 
 const SHOP_NAV = [
   { href: '/shop', label: '概要' },
-  { href: '/shop/archive', label: 'Archive - 暗黙知' },
-  { href: '/shop/guide', label: 'Guide (AI弟子)' },
-  { href: '/shop/agent', label: 'Agent - AI相談' },
+  { href: '/shop/archive', label: '記録 - 暗黙知' },
+  { href: '/shop/guide', label: '指南 - AI弟子' },
+  { href: '/shop/agent', label: '相談 - AI相談' },
 ] as const
 
 export default async function ShopSectionLayout({
