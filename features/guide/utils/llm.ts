@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import type { GuideAnalysisStatus } from '../types'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'missing-openai-api-key',
@@ -11,10 +12,12 @@ export type GenerateFeedbackRequest = {
   missingItems: string[]
   extraItems: string[]
   correctState: Record<string, unknown>
+  status: GuideAnalysisStatus
 }
 
 export async function generateGuideFeedback(request: GenerateFeedbackRequest): Promise<string> {
-  const { sceneName, season, observedItems, missingItems, extraItems, correctState } = request
+  const { sceneName, season, observedItems, missingItems, extraItems, correctState, status } =
+    request
 
   const prompt = `あなたは旅館の先代として、後継者に準備作業を指導する役割です。
 現場の状況を見て、優しく、具体的に、改善点をフィードバックしてください。
@@ -34,10 +37,14 @@ ${missingItems.join(', ') || 'なし'}
 # 余分なもの/違うこと
 ${extraItems.join(', ') || 'なし'}
 
+# 判定ステータス
+${status}
+
 # 指示
 - 2-3文で簡潔に
 - 足りないものがあれば「〜を添えてください」のように具体的に
 - 完璧なら「よくできています」と褒める
+- 判定できない場合は、カメラ位置や明るさを直すよう短く伝える
 - 季節感を大切にする視点があれば伝える
 - 先代の口調で、優しく指導的に`
 

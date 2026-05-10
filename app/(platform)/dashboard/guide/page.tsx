@@ -30,7 +30,6 @@ export default async function DashboardGuidePage() {
       scenesResult.data.map((scene: any) => ({
         id: scene.id,
         sceneName: scene.scene_name,
-        correctState: scene.correct_state as Record<string, unknown>,
         season: scene.season,
       }))
     : []

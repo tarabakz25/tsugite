@@ -8,6 +8,7 @@ import Button from '@/components/ui/button'
 
 import type { TacitTag } from '@/features/archive/types'
 import { deleteTacitTag } from '@/features/archive/actions'
+import CreateGuideSceneFromTagButton from '@/features/guide/components/create-guide-scene-from-tag-button'
 
 type TacitTagsListProps = {
   tags: TacitTag[]
@@ -84,6 +85,7 @@ export default function TacitTagsList({ tags }: TacitTagsListProps) {
             <p className="text-xs text-ink-4">
               {new Date(tag.createdAt).toLocaleDateString('ja-JP')}
             </p>
+            <CreateGuideSceneFromTagButton tagId={tag.id} />
             <Button
               variant="danger"
               size="sm"

@@ -46,9 +46,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - `app/dashboard/settings/layout.tsx`: ロール別タブ（shop: 店舗情報/メンバー/アカウント、successor: プロフィール/アカウント）
   - `app/dashboard/settings/page.tsx`: ロール別デフォルトリダイレクト
   - `app/dashboard/settings/shop/page.tsx`, `members/page.tsx`, `profile/page.tsx`, `account/page.tsx`: 設定サブページ（既存フォームを再利用）
-
+- `app/shop/guide/scenes/new`: Guide の正解シーン登録画面を追加。`scene_name`, `season`, `correct_state` JSON を `reference_scenes` に保存できるようにした
+- `features/guide/components/reference-scene-form.tsx`: 正解シーン登録用フォームを追加し、不正な JSON や空オブジェクトを保存前に拒否するようにした
+- `features/guide/actions.ts`: Archive の `tacit_tags` から OpenAI `gpt-4o` で `reference_scenes` を自動生成し、`source_tag_id` で元タグに紐づける Server Action を追加
+- `features/guide/components/create-guide-scene-from-tag-button.tsx`: Archive の暗黙知タグから Guide 正解シーンを生成するボタンを追加
+- `app/shop/guide/scenes`: Guideシーン管理画面を追加。登録済みシーンを一覧し、不要な `reference_scenes` を削除できるようにした
+- `features/guide/components/reference-scenes-manager.tsx`: Guideシーン削除用の一覧UIを追加
 - `features/archive/actions.ts`: インタビュー削除用 `deleteInterview`（ストレージ上の音声・動画削除後に DB 削除）および暗黙知タグ削除用 `deleteTacitTag`（埋め込み行を先に削除してからタグ削除）を追加
 - `features/archive/components/interviews-list.tsx` / `tacit-tags-list.tsx`: 各一覧に削除ボタン（確認ダイアログ付き）を追加。削除成功後は `router.refresh()` でサーバーデータのみ再取得し、Archive のタブ選択を維持したまま一覧を更新する
+
+### Changed
+
+- `/api/guide/analyze`: 入力を `sceneId` ベースに変更し、サーバー側で `reference_scenes.correct_state` を取得してから判定するようにした
+- `/api/guide/analyze` / `/api/guide/tts`: Supabase user 認証を追加し、Guide API を未ログイン状態では利用できないようにした
+- `features/guide/components/guide-interface.tsx`: `correctState` をクライアントから送らない構成へ変更し、解析・TTS・ログ保存のエラー表示を分離。TTS再生中の連続フィードバックを抑制するクールダウンを追加
+- `features/guide/components/guide-interface.tsx` / `features/guide/components/reference-scenes-manager.tsx`: JSON入力による正解シーン追加を主導線から外し、ArchiveからGuideシーンを生成する導線に寄せた
+- `features/guide/components/create-guide-scene-from-tag-button.tsx` / `features/guide/components/reference-scenes-manager.tsx`: Guideシーン利用導線を `Guideで使う` に統一し、管理カードごとの細かい正解状態表示と個別利用ボタンを削除
+- `features/guide/actions.ts`: Guideシーン削除用 `deleteReferenceScene` を追加。ログイン中の店ユーザーが所有する `reference_scenes` だけ削除できるようにした
+- `docs/current-requirements.md`: Guide の実装実態に合わせ、OpenAI Vision 利用、`/shop/guide` ルート、正解シーン登録、Guide API 認証の記述を更新
+
+### Removed
+
+- `app/shop/page.tsx`: 店ダッシュボードのクイックアクセスカードから Archive / Guide / Agent の説明文を削除
 
 ### Fixed
 
@@ -72,6 +91,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - `package.json` の `dev` スクリプトに `--hostname 0.0.0.0` を追加。LAN経由（スマホ等）でのローカル開発テストを可能にするため
+- Archive のアップロード画面で、対応形式の表示とフロントエンドのファイル選択・検証を MP3 のみに統一
 - `features/guide/utils/vision.ts`: Vision 画像認識を Google Gemini (`gemini-2.0-flash-exp`) から OpenAI (`gpt-4o`) に置き換え。API を OpenAI に統一し、`@google/generative-ai` への依存を解消
   - `@google/generative-ai` パッケージを `package.json` から削除
   - 既存の `analyzeSceneWithVision` の入出力インターフェースは変更なし（既存の呼び出し元に影響なし）

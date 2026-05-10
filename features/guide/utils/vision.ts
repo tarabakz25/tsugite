@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import type { GuideAnalysisStatus } from '../types'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'missing-openai-api-key',
@@ -6,19 +7,23 @@ const openai = new OpenAI({
 
 export type AnalyzeSceneRequest = {
   imageDataUrl: string
-  sceneName: string
-  correctState: Record<string, unknown>
+  sceneId: string
 }
 
 export type AnalyzeSceneResponse = {
   visionResult: {
     items: string[]
     rawDescription: string
+    missing: string[]
+    extra: string[]
+    status: GuideAnalysisStatus
   }
   differences: {
     missing: string[]
     extra: string[]
   }
+  status: GuideAnalysisStatus
+  feedback: string
 }
 
 export async function analyzeSceneWithVision(
@@ -117,4 +122,19 @@ export function compareWithCorrectState(
   }
 
   return { missing, extra }
+}
+
+export function determineGuideAnalysisStatus(
+  observedItems: string[],
+  differences: { missing: string[]; extra: string[] },
+): GuideAnalysisStatus {
+  if (observedItems.length === 0) {
+    return 'unknown'
+  }
+
+  if (differences.missing.length > 0 || differences.extra.length > 0) {
+    return 'needs_fix'
+  }
+
+  return 'ok'
 }

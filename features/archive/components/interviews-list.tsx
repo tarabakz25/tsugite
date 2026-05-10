@@ -47,7 +47,7 @@ export default function InterviewsList({ interviews, onProcess }: InterviewsList
 
   const handleDelete = (interviewId: string) => {
     const message =
-      'このインタビューを削除しますか？ストレージ上の音声・動画ファイルとレコードが削除されます。関連する暗黙知タグは残りますが、インタビューとの紐づけは外れます。'
+      'このインタビューを削除しますか？ストレージ上の音声ファイルとレコードが削除されます。関連する暗黙知タグは残りますが、インタビューとの紐づけは外れます。'
     const confirmed = window.confirm(message)
     if (!confirmed) {
       return
@@ -82,7 +82,7 @@ export default function InterviewsList({ interviews, onProcess }: InterviewsList
   if (interviews.length === 0) {
     return (
       <div className="text-center py-12 text-ink-3">
-        まだインタビュー動画・音声がアップロードされていません。
+        まだインタビュー音声がアップロードされていません。
       </div>
     )
   }

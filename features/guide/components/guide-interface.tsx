@@ -1,20 +1,46 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import Link from 'next/link'
+import { useCallback, useRef, useState } from 'react'
+import Badge from '@/components/ui/badge'
 import Button from '@/components/ui/button'
 import Card from '@/components/ui/card'
-import Badge from '@/components/ui/badge'
 import PageContainer from '@/components/layout/page-container'
 import PageHeader from '@/components/layout/page-header'
 import SplitLayout from '@/components/layout/split-layout'
 import CameraCapture from './camera-capture'
 import FeedbackDisplay from './feedback-display'
-import type { GuideFeedback, GuideStatus, SceneState } from '../types'
+import type { GuideAnalysisStatus, GuideFeedback, GuideStatus, SceneState } from '../types'
 import { saveObservationLog } from '../actions'
+
+const FEEDBACK_COOLDOWN_MS = 5000
 
 type GuideInterfaceProps = {
   shopId: string
   scenes: SceneState[]
+}
+
+type ProcessingErrors = {
+  analysis?: string
+  tts?: string
+  log?: string
+}
+
+type AnalyzeGuideResponse = {
+  visionResult: {
+    items: string[]
+    rawDescription: string
+    missing: string[]
+    extra: string[]
+    status: GuideAnalysisStatus
+    sceneId: string
+  }
+  differences: {
+    missing: string[]
+    extra: string[]
+  }
+  status: GuideAnalysisStatus
+  feedback: string
 }
 
 export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) {
@@ -25,10 +51,22 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
     scenes.length > 0 ? scenes[0] : null,
   )
   const [lastProcessedImage, setLastProcessedImage] = useState<string | null>(null)
+  const [processingErrors, setProcessingErrors] = useState<ProcessingErrors>({})
+  const isProcessingRef = useRef(false)
+  const isActiveRef = useRef(false)
+  const lastFeedbackAtRef = useRef(0)
+
+  const hasProcessingErrors = Boolean(
+    processingErrors.analysis || processingErrors.tts || processingErrors.log,
+  )
 
   const handleCapture = useCallback(
     async (imageDataUrl: string) => {
-      if (!selectedScene || status === 'analyzing') {
+      if (!selectedScene || isProcessingRef.current) {
+        return
+      }
+
+      if (Date.now() - lastFeedbackAtRef.current < FEEDBACK_COOLDOWN_MS) {
         return
       }
 
@@ -37,6 +75,8 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
       }
 
       setLastProcessedImage(imageDataUrl)
+      setProcessingErrors({})
+      isProcessingRef.current = true
       setStatus('analyzing')
 
       try {
@@ -45,9 +85,7 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             imageDataUrl,
-            sceneName: selectedScene.sceneName,
-            correctState: selectedScene.correctState,
-            season: selectedScene.season,
+            sceneId: selectedScene.id,
           }),
         })
 
@@ -55,26 +93,39 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
           throw new Error('Scene analysis failed')
         }
 
-        const analyzeData = await analyzeResponse.json()
-
-        setStatus('speaking')
-        const ttsResponse = await fetch('/api/guide/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: analyzeData.feedback,
-          }),
-        })
+        const analyzeData = (await analyzeResponse.json()) as AnalyzeGuideResponse
 
         let audioUrl: string | undefined
 
-        if (ttsResponse.ok) {
-          const ttsData = await ttsResponse.json()
-          const audioBlob = new Blob(
-            [Uint8Array.from(atob(ttsData.audioData), (c) => c.charCodeAt(0))],
-            { type: ttsData.mimeType },
-          )
-          audioUrl = URL.createObjectURL(audioBlob)
+        try {
+          setStatus('speaking')
+          const ttsResponse = await fetch('/api/guide/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: analyzeData.feedback,
+            }),
+          })
+
+          if (ttsResponse.ok) {
+            const ttsData = (await ttsResponse.json()) as { audioData: string; mimeType: string }
+            const audioBlob = new Blob(
+              [Uint8Array.from(atob(ttsData.audioData), (c) => c.charCodeAt(0))],
+              { type: ttsData.mimeType },
+            )
+            audioUrl = URL.createObjectURL(audioBlob)
+          } else {
+            setProcessingErrors((current) => ({
+              ...current,
+              tts: '音声生成に失敗しました。テキストのフィードバックは表示されています。',
+            }))
+          }
+        } catch (ttsError) {
+          console.error('Guide TTS error:', ttsError)
+          setProcessingErrors((current) => ({
+            ...current,
+            tts: '音声生成に失敗しました。テキストのフィードバックは表示されています。',
+          }))
         }
 
         const newFeedback: GuideFeedback = {
@@ -84,42 +135,60 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
         }
 
         setFeedback(newFeedback)
+        lastFeedbackAtRef.current = Date.now()
 
-        await saveObservationLog({
+        const logResult = await saveObservationLog({
           shopId,
           sceneId: selectedScene.id,
           visionResult: {
-            items: analyzeData.visionResult.items,
-            rawDescription: analyzeData.visionResult.rawDescription,
+            ...analyzeData.visionResult,
             differences: analyzeData.differences,
+            status: analyzeData.status,
+            sceneId: selectedScene.id,
           },
           llmFeedback: analyzeData.feedback,
         })
 
-        setStatus('idle')
+        if (!logResult.success) {
+          setProcessingErrors((current) => ({
+            ...current,
+            log: logResult.error || '観察ログの保存に失敗しました。',
+          }))
+        }
+
+        setStatus(isActiveRef.current ? 'capturing' : 'idle')
       } catch (error) {
         console.error('Guide processing error:', error)
         setStatus('error')
+        setProcessingErrors({
+          analysis: '画像解析に失敗しました。シーンとカメラ映像を確認してください。',
+        })
         setFeedback({
           text: 'エラーが発生しました。もう一度お試しください。',
           timestamp: Date.now(),
         })
-        setTimeout(() => setStatus('idle'), 3000)
+        setTimeout(() => setStatus(isActiveRef.current ? 'capturing' : 'idle'), 3000)
+      } finally {
+        isProcessingRef.current = false
       }
     },
-    [selectedScene, status, lastProcessedImage, shopId],
+    [selectedScene, lastProcessedImage, shopId],
   )
 
   const handleStart = () => {
+    isActiveRef.current = true
     setIsActive(true)
     setStatus('capturing')
     setLastProcessedImage(null)
+    setProcessingErrors({})
   }
 
   const handleStop = () => {
+    isActiveRef.current = false
     setIsActive(false)
     setStatus('idle')
     setLastProcessedImage(null)
+    setProcessingErrors({})
   }
 
   const getStatusBadge = () => {
@@ -265,16 +334,30 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
 
   if (scenes.length === 0) {
     return (
-      <PageContainer maxWidth="2xl">
-        <Card className="border border-dashed border-warning/35 bg-warning-bg px-8 py-10 text-center shadow-none">
-          <p className="text-lg font-semibold text-ink">
-            Guide に表示できるシーンがまだありません。
-          </p>
-          <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-ink-2">
-            先に Archive から参照シーンを登録すると、リアルタイム比較を開始できます。
-          </p>
-        </Card>
-      </PageContainer>
+      <Card className="p-8 text-center">
+        <div className="mx-auto max-w-xl space-y-5">
+          <div>
+            <h2 className="text-lg font-bold text-ink">参照シーンが登録されていません</h2>
+            <p className="mt-2 text-sm leading-6 text-ink-2">
+              Archiveの暗黙知タグからGuideシーンを生成してください。生成後にこの画面で選択できます。
+            </p>
+          </div>
+          <div className="flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-shu bg-shu px-4 text-sm font-semibold text-white transition-colors hover:bg-shu-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-shu"
+              href="/shop/archive"
+            >
+              Archiveから生成
+            </Link>
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-washi-3 bg-white px-4 text-sm font-semibold text-ink transition-colors hover:border-ink-4 hover:bg-washi focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-shu"
+              href="/shop/guide/scenes"
+            >
+              シーン管理
+            </Link>
+          </div>
+        </div>
+      </Card>
     )
   }
 

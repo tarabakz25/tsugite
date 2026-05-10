@@ -1,14 +1,16 @@
+export type GuideAnalysisStatus = 'ok' | 'needs_fix' | 'unknown'
+
 export type VisionResult = {
   items: string[]
   missingItems: string[]
   extraItems: string[]
   rawDescription: string
+  status: GuideAnalysisStatus
 }
 
 export type SceneState = {
   id: string
   sceneName: string
-  correctState: Record<string, unknown>
   season?: string | null
 }
 

@@ -2,7 +2,11 @@ import type { NextRequest } from 'next/server'
 
 import { jsonError } from '@/lib/api/http'
 import { generateGuideFeedback } from '@/features/guide/utils/llm'
-import { analyzeSceneWithVision, compareWithCorrectState } from '@/features/guide/utils/vision'
+import {
+  analyzeSceneWithVision,
+  compareWithCorrectState,
+  determineGuideAnalysisStatus,
+} from '@/features/guide/utils/vision'
 
 export const runtime = 'nodejs'
 
@@ -29,6 +33,8 @@ export async function POST(request: NextRequest) {
     const visionResult = await analyzeSceneWithVision(imageDataUrl, sceneName)
     const differences = compareWithCorrectState(visionResult.items, correctStateRecord)
 
+    const status = determineGuideAnalysisStatus(visionResult.items, differences)
+
     const feedback = await generateGuideFeedback({
       sceneName,
       season: typeof season === 'string' ? season : undefined,
@@ -36,6 +42,7 @@ export async function POST(request: NextRequest) {
       missingItems: differences.missing,
       extraItems: differences.extra,
       correctState: correctStateRecord,
+      status,
     })
 
     return Response.json({
@@ -44,6 +51,7 @@ export async function POST(request: NextRequest) {
         rawDescription: visionResult.rawDescription,
       },
       differences,
+      status,
       feedback,
     })
   } catch (error) {
