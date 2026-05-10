@@ -12,7 +12,11 @@ import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { analyzeSceneWithVision, compareWithCorrectState } from '@/features/guide/utils/vision'
+import {
+  analyzeSceneWithVision,
+  compareWithCorrectState,
+  determineGuideAnalysisStatus,
+} from '@/features/guide/utils/vision'
 import { generateGuideFeedback } from '@/features/guide/utils/llm'
 import { generateSpeech } from '@/features/guide/utils/tts'
 import { buildRAGPrompt, getRAGContext } from '@/lib/agent/rag'
@@ -204,38 +208,79 @@ app.post('/agent/tts', zValidator('json', ttsSchema), async (c) => {
   }
 })
 
-// Guide feature: Analyze scene
-app.post('/guide/analyze', async (c) => {
-  try {
-    const body = await c.req.json()
-    const { imageDataUrl, sceneName, correctState, season } = body
+const guideAnalyzeSchema = z.object({
+  imageDataUrl: z.string().min(1),
+  sceneId: z.string().uuid(),
+})
 
-    if (!imageDataUrl || !sceneName || !correctState) {
-      return c.json({ error: 'Missing required fields' }, 400)
+// Guide feature: Analyze scene
+app.post('/guide/analyze', zValidator('json', guideAnalyzeSchema), async (c) => {
+  try {
+    const { imageDataUrl, sceneId } = c.req.valid('json')
+
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return c.json({ error: 'Unauthorized' }, 401)
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return c.json({ error: 'OpenAI API key not configured' }, 500)
+    }
+
+    const { data: scene, error: sceneError } = await supabase
+      .from('reference_scenes')
+      .select('id, shop_id, scene_name, correct_state, season')
+      .eq('id', sceneId)
+      .maybeSingle()
+
+    if (sceneError) {
+      console.error('Guide scene read error:', sceneError)
+      return c.json({ error: 'Failed to load reference scene' }, 500)
+    }
+
+    if (!scene) {
+      return c.json({ error: 'Reference scene not found' }, 404)
     }
 
     // Step 1: Vision analysis
-    const visionResult = await analyzeSceneWithVision(imageDataUrl, sceneName)
+    const visionResult = await analyzeSceneWithVision(imageDataUrl, scene.scene_name)
 
     // Step 2: Compare with correct state
+    const correctState = scene.correct_state as Record<string, unknown>
     const differences = compareWithCorrectState(visionResult.items, correctState)
+    const status = determineGuideAnalysisStatus(visionResult.items, differences)
 
     // Step 3: Generate feedback
     const feedback = await generateGuideFeedback({
-      sceneName,
-      season,
+      sceneName: scene.scene_name,
+      season: scene.season,
       observedItems: visionResult.items,
       missingItems: differences.missing,
       extraItems: differences.extra,
       correctState,
+      status,
     })
 
     return c.json({
+      scene: {
+        id: scene.id,
+        sceneName: scene.scene_name,
+        season: scene.season,
+      },
       visionResult: {
         items: visionResult.items,
         rawDescription: visionResult.rawDescription,
+        missing: differences.missing,
+        extra: differences.extra,
+        status,
+        sceneId: scene.id,
       },
       differences,
+      status,
       feedback,
     })
   } catch (error) {
@@ -244,14 +289,22 @@ app.post('/guide/analyze', async (c) => {
   }
 })
 
-// Guide feature: Generate TTS
-app.post('/guide/tts', async (c) => {
-  try {
-    const body = await c.req.json()
-    const { text } = body
+const guideTtsSchema = z.object({
+  text: z.string().min(1).max(1000),
+})
 
-    if (!text) {
-      return c.json({ error: 'Missing text field' }, 400)
+// Guide feature: Generate TTS
+app.post('/guide/tts', zValidator('json', guideTtsSchema), async (c) => {
+  try {
+    const { text } = c.req.valid('json')
+
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return c.json({ error: 'Unauthorized' }, 401)
     }
 
     const audioBuffer = await generateSpeech(text)

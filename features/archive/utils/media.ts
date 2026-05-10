@@ -8,7 +8,7 @@ const MP3_MIME_TYPES = new Set([
 
 const VIDEO_EXTENSIONS = new Set(['mp4', 'mov', 'avi', 'webm', 'm4v', 'mkv'])
 
-export const INTERVIEW_FILE_ACCEPT = 'video/*,audio/mpeg,audio/mp3,.mp3'
+export const INTERVIEW_FILE_ACCEPT = 'audio/mpeg,audio/mp3,.mp3'
 export const INTERVIEW_STORAGE_BUCKET = 'interview-videos'
 export const MAX_INTERVIEW_FILE_SIZE = 100 * 1024 * 1024
 

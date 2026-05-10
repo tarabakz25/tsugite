@@ -12,19 +12,16 @@ const stats = [
 const quickActions = [
   {
     title: 'Archive - 暗黙知を記録',
-    description: '現場の作業を動画で撮影し、先代の技術をデータ化します。',
     href: '/shop/archive',
     icon: Video,
   },
   {
     title: 'Guide - AI弟子で確認',
-    description: 'カメラをかざして、自分の所作が正しいかリアルタイムで判定します。',
     href: '/shop/guide',
     icon: BookOpen,
   },
   {
     title: 'Agent - AIに相談',
-    description: '蓄積された暗黙知ベースで、現場の疑問をAIに質問できます。',
     href: '/shop/agent',
     icon: MessageSquare,
   },
@@ -77,9 +74,6 @@ export default function ShopDashboardPage() {
                 <h3 className="font-bold text-zinc-900 group-hover:text-shu dark:text-zinc-100">
                   {action.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                  {action.description}
-                </p>
               </Link>
             ))}
           </div>

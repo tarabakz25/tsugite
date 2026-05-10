@@ -65,7 +65,7 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
       <PageContainer>
         <PageHeader
           title="Archive - 暗黙知の蓄積"
-          description="インタビュー動画・音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。"
+          description="インタビュー音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。"
         />
 
         <Tabs
@@ -76,7 +76,7 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
               content: (
                 <div className="max-w-2xl">
                   <h2 className="mb-4 text-xl font-semibold text-ink">
-                    新しいインタビュー動画・音声をアップロード
+                    新しいインタビュー音声をアップロード
                   </h2>
                   <VideoUploadForm onSuccess={() => window.location.reload()} />
                 </div>

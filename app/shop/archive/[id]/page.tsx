@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ensureShopForProfile } from '@/lib/shops'
 import { isAudioStoragePath } from '@/features/archive/utils/media'
 import type { TacitTag } from '@/features/archive/types'
+import CreateGuideSceneFromTagButton from '@/features/guide/components/create-guide-scene-from-tag-button'
 import TranscribeButton from './_components/transcribe-button'
 
 export default async function ShopArchiveDetailPage({
@@ -154,6 +155,9 @@ export default async function ShopArchiveDetailPage({
                   理由
                 </p>
                 <p className="text-sm text-ink-4">{tag.reason}</p>
+                <div className="mt-4 border-t border-washi-3 pt-4">
+                  <CreateGuideSceneFromTagButton tagId={tag.id} />
+                </div>
               </div>
             ))}
           </div>

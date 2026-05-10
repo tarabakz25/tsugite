@@ -43,7 +43,7 @@ TSUGITE は、伝統工芸、旅館、老舗飲食などで言語化されにく
 - 店向けダッシュボード、募集管理、応募一覧の UI。
 - 継ぎ手向けホーム、プロフィール、応募履歴、Agent 画面。
 - Archive の動画・MP3アップロード、文字起こし、暗黙知抽出、Embedding 作成。
-- Guide のカメラ撮影、Vision 分析、正解状態との差分比較、音声フィードバック、観察ログ保存。
+- Guide の正解シーン登録、カメラ撮影、Vision 分析、正解状態との差分比較、音声フィードバック、観察ログ保存。
 - Agent の RAG チャット API、TTS API、チャット UI。
 - `/app/*` 配下の MVP 体験導線。
 
@@ -53,7 +53,7 @@ TSUGITE は、伝統工芸、旅館、老舗飲食などで言語化されにく
 - 継ぎ手と店の正式な紐付けモデル。
 - 店メンバー招待の実処理。
 - 会話履歴の永続化。
-- Guide の正解シーン登録フォームの実保存。
+- Guide の Archive タグ由来の正解シーン一括生成や編集レビュー導線。
 - 管理者機能、課金、通知、監査ログ。
 - 本番プライバシー保証、オンデバイス推論、音声クローン。
 
@@ -139,20 +139,22 @@ TSUGITE は、伝統工芸、旅館、老舗飲食などで言語化されにく
 
 ### 5.8 Guide
 
-| ID     | 要件                                                                                                         | 現状     |
-| ------ | ------------------------------------------------------------------------------------------------------------ | -------- |
-| GDE-01 | 店ユーザーは登録済み reference scene を選択して Guide を開始できる。                                         | 実装済み |
-| GDE-02 | reference scene は `scene_name`, `correct_state`, `season` を持つ。                                          | 実装済み |
-| GDE-03 | カメラは `navigator.mediaDevices.getUserMedia` を使い、可能なら背面カメラ、1280x720 を優先する。             | 実装済み |
-| GDE-04 | Guide 開始中は 2 秒間隔で video frame を JPEG data URL として取得する。                                      | 実装済み |
-| GDE-05 | `/api/guide/analyze` は画像、シーン名、正解状態を受け取り、Gemini Vision で見える物品を抽出する。            | 実装済み |
-| GDE-06 | 正解状態との差分比較は、`correct_state` の有効値を期待項目として、文字列包含で missing/extra を算出する。    | 実装済み |
-| GDE-07 | 差分をもとに GPT-4o が先代の口調で 2-3 文のフィードバックを生成する。                                        | 実装済み |
-| GDE-08 | `/api/guide/tts` は OpenAI TTS `tts-1`、voice `nova` で音声を生成し、base64 MP3 を返す。                     | 実装済み |
-| GDE-09 | Guide の結果は `observation_logs` に `shop_id`, `scene_id`, `vision_result`, `llm_feedback` として保存する。 | 実装済み |
-| GDE-10 | `/app/guide/logs` は観察ログ履歴を表示する。                                                                 | 実装済み |
-| GDE-11 | 正解シーン登録画面は静的表示であり、実保存フォームはない。                                                   | モック   |
-| GDE-12 | 画像はクラウド Vision API に送信されるため、画面上でデモモードかつプライバシー保証なしと表示する。           | 実装済み |
+| ID     | 要件                                                                                                                                                   | 現状     |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| GDE-01 | 店ユーザーは登録済み reference scene を選択して Guide を開始できる。                                                                                   | 実装済み |
+| GDE-02 | reference scene は `scene_name`, `correct_state`, `season` を持つ。                                                                                    | 実装済み |
+| GDE-03 | カメラは `navigator.mediaDevices.getUserMedia` を使い、可能なら背面カメラ、1280x720 を優先する。                                                       | 実装済み |
+| GDE-04 | Guide 開始中は 2 秒間隔で video frame を JPEG data URL として取得する。                                                                                | 実装済み |
+| GDE-05 | `/api/guide/analyze` は画像と `sceneId` を受け取り、サーバー側で `reference_scenes.correct_state` を取得し、OpenAI `gpt-4o` で見える物品を抽出する。   | 実装済み |
+| GDE-06 | 正解状態との差分比較は、`correct_state` の有効値を期待項目として、文字列包含で `missing` / `extra` / `status` を算出する。                             | 実装済み |
+| GDE-07 | 差分をもとに GPT-4o が先代の口調で 2-3 文のフィードバックを生成する。                                                                                  | 実装済み |
+| GDE-08 | `/api/guide/tts` は OpenAI TTS `tts-1`、voice `nova` で音声を生成し、base64 MP3 を返す。                                                               | 実装済み |
+| GDE-09 | Guide の結果は `observation_logs` に `shop_id`, `scene_id`, `vision_result`, `llm_feedback` として保存する。                                           | 実装済み |
+| GDE-10 | 観察ログ履歴専用画面は未実装。ログ自体は `observation_logs` に保存する。                                                                               | 未実装   |
+| GDE-11 | `/shop/guide/scenes/new` は暫定の JSON 入力ルートとして残す。通常導線では Archive の `tacit_tags` から生成する。                                       | 実装済み |
+| GDE-12 | Archive の `tacit_tags` から OpenAI `gpt-4o` で `reference_scenes` を自動生成し、`source_tag_id` で元タグに紐づける。                                  | 実装済み |
+| GDE-13 | `/shop/guide/scenes` で登録済み Guide シーンを一覧し、不要な `reference_scenes` を削除できる。削除時、過去ログの `scene_id` は DB 制約で null になる。 | 実装済み |
+| GDE-14 | 画像はクラウド Vision API に送信されるため、画面上でデモモードかつプライバシー保証なしと表示する。                                                     | 実装済み |
 
 ### 5.9 Agent
 
@@ -196,7 +198,7 @@ TSUGITE は、伝統工芸、旅館、老舗飲食などで言語化されにく
 
 Archive で作った `interviews` と `tacit_tags` が Agent の根拠になる。`tag_embeddings` がないタグは pgvector 検索対象にならないが、Agent は最近の `tacit_tags` を補助コンテキストとして利用する。
 
-Guide は `reference_scenes.correct_state` を正解状態として利用し、実行結果を `observation_logs` に保存する。`reference_scenes.source_tag_id` は Archive タグ由来の正解シーンを表現できるが、現状 UI では作成導線が未完成である。
+Guide は `reference_scenes.correct_state` を正解状態として利用し、実行結果を `observation_logs` に保存する。正解シーンの通常導線は、Archive の `tacit_tags` から `reference_scenes` を自動生成する流れに統一する。Archive 由来の正解シーンは `reference_scenes.source_tag_id` で元タグに紐づく。`/shop/guide/scenes/new` は暫定の JSON 入力ルートとして残すが、通常 UI からは直接案内しない。
 
 ## 7. API 要件
 
@@ -206,8 +208,8 @@ Guide は `reference_scenes.correct_state` を正解状態として利用し、�
 | POST   | `/api/archive/transcribe/:interviewId` | media を文字起こしし、transcript 保存    | Supabase user 必須、interview owner 確認あり                                                                              |
 | POST   | `/api/archive/extract/:interviewId`    | transcript から暗黙知タグ抽出            | Supabase user 必須、interview owner 確認あり                                                                              |
 | POST   | `/api/archive/embed/:tagId`            | tag の Embedding 作成                    | Supabase user 必須、tag owner 確認あり                                                                                    |
-| POST   | `/api/guide/analyze`                   | 画像解析、正解状態との差分、LLM feedback | API 内の認証チェックなし                                                                                                  |
-| POST   | `/api/guide/tts`                       | Guide feedback の TTS                    | API 内の認証チェックなし                                                                                                  |
+| POST   | `/api/guide/analyze`                   | 画像解析、正解状態との差分、LLM feedback | Supabase user 必須、`sceneId` の `reference_scenes` を RLS で所有確認                                                     |
+| POST   | `/api/guide/tts`                       | Guide feedback の TTS                    | Supabase user 必須                                                                                                        |
 | POST   | `/api/agent/chat`                      | RAG チャットのストリーミング回答         | Supabase user 必須、shop owner または `profiles.organization_ids` によるアクセス確認あり。DB参照は Supabase HTTP/RPC 経由 |
 | POST   | `/api/agent/tts`                       | Agent 回答の TTS                         | Supabase user 必須                                                                                                        |
 
@@ -237,6 +239,8 @@ Guide は `reference_scenes.correct_state` を正解状態として利用し、�
 - `/shop/applications`: 応募一覧モック。
 - `/shop/archive`: Archive 本体。
 - `/shop/guide`: Guide 本体。
+- `/shop/guide/scenes`: Guide 正解シーン管理。
+- `/shop/guide/scenes/new`: Guide 正解シーン作成。暫定 JSON 入力ルートで、通常導線からは非表示。
 
 ### 8.3 継ぎ手
 
@@ -250,7 +254,7 @@ Guide は `reference_scenes.correct_state` を正解状態として利用し、�
 
 - `/app`: 3機能のホーム。
 - `/app/archive`, `/app/archive/upload`, `/app/archive/[id]`, `/app/archive/tags`, `/app/archive/timeline`: Archive デモ・実データ表示。
-- `/app/guide`, `/app/guide/scenes/new`, `/app/guide/scenes/[id]`, `/app/guide/scenes/[id]/live`, `/app/guide/logs`: Guide デモ・実データ表示。
+- Guide の現行ルートは `/shop/guide`、`/shop/guide/scenes`、`/shop/guide/scenes/new` に統一。`/app/guide*` は現行ルート未配置。
 - `/app/agent`, `/app/agent/history`, `/app/agent/sources`: Agent デモ。
 - `/app/settings/shop`, `/app/settings/members`, `/app/settings/account`: 設定の静的表示。
 
@@ -300,8 +304,7 @@ Guide は `reference_scenes.correct_state` を正解状態として利用し、�
 - 公開募集、店の募集管理、応募管理を実データ化するスキーマが未定。
 - 継ぎ手と shop の正式な関係モデルが未定。現状 Agent は暫定的に `profiles.organization_ids` を参照する。
 - `/app/*` をデモ公開のままにするか、ログイン必須にするか未定。
-- Agent API、Guide API の認証・認可が API 内で完結していない。
-- Guide の正解シーン登録と source tag 連携の UI が未完成。
+- Agent API の一部認証・認可境界と、Guide の Archive タグ由来シーンの編集レビュー導線が未完成。
 - Agent の citation header をチャット UI へ反映していない。
 - Archive のタグ編集、重複 Embedding 対策、削除、処理キューが未実装。
 - マーケティングヘッダーに `/demo/ryokan` へのリンクが残っているが、現状該当ルートは存在しない。

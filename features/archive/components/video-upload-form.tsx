@@ -13,7 +13,7 @@ import {
 import {
   INTERVIEW_FILE_ACCEPT,
   INTERVIEW_STORAGE_BUCKET,
-  isSupportedInterviewFile,
+  isMp3File,
   MAX_INTERVIEW_FILE_SIZE,
 } from '@/features/archive/utils/media'
 
@@ -30,9 +30,9 @@ function errorMessage(code: UploadVideoState['error']): string | null {
     case 'no_shop':
       return '店舗情報が見つかりません。'
     case 'no_file':
-      return '動画またはMP3ファイルを選択してください。'
+      return 'MP3ファイルを選択してください。'
     case 'invalid_type':
-      return '動画またはMP3ファイルのみアップロード可能です。'
+      return 'MP3ファイルのみアップロード可能です。'
     case 'file_too_large':
       return 'ファイルサイズは100MB以下にしてください。'
     case 'upload_error':
@@ -59,7 +59,7 @@ export default function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
       return
     }
 
-    if (!isSupportedInterviewFile(selectedFile)) {
+    if (!isMp3File(selectedFile)) {
       setError('invalid_type')
       return
     }
@@ -127,7 +127,7 @@ export default function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
       ) : null}
       <div className="flex flex-col gap-2">
         <label htmlFor="video" className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-          インタビュー動画・音声
+          インタビュー音声
         </label>
         <input
           type="file"
@@ -147,7 +147,7 @@ export default function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
           </p>
         )}
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          対応形式: MP4, MOV, AVI, MP3 など（最大100MB）
+          対応形式: MP3のみ対応（最大100MB）
         </p>
       </div>
       <Button type="submit" disabled={!selectedFile || isUploading} isLoading={isUploading}>
