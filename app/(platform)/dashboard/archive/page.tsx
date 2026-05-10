@@ -1,7 +1,5 @@
 import { redirect } from 'next/navigation'
 
-import PageContainer from '@/components/layout/page-container'
-import PageHeader from '@/components/layout/page-header'
 import { createClient } from '@/lib/supabase/server'
 import ArchiveContent from '@/features/archive/components/archive-content'
 import type { Interview, TacitTag } from '@/features/archive/types'
@@ -63,24 +61,40 @@ export default async function DashboardArchivePage() {
       createdAt: new Date(row.created_at),
     }))
 
-    return <ArchiveContent interviews={interviews} tags={tags} />
+    return (
+      <div className="flex min-h-0 flex-1 flex-col overflow-auto">
+        {/* ヘッダー */}
+        <header className="flex flex-col gap-2 border-b border-[var(--line-soft)] bg-[var(--washi)] px-6 pb-5 pt-6 md:px-8">
+          <h1 className="font-serif text-2xl font-bold tracking-[0.06em] text-ink md:text-[26px]">
+            Archive ─ 蓄える
+          </h1>
+          <p className="text-[13px] leading-relaxed text-ink-3">
+            先代の経験を記録し、AIが暗黙知を抽出していきます。
+          </p>
+        </header>
+        <ArchiveContent interviews={interviews} tags={tags} />
+      </div>
+    )
   }
 
   // successor
   return (
-    <PageContainer>
-      <PageHeader
-        title="Archive — 暗黙知の閲覧"
-        description="店舗の先代が蓄積した判断基準・暗黙知を閲覧できます。Agent への質問の参考にしてください。"
-      />
-
-      {/* TODO: query tacit_tags for shops the successor has applied to,
-          once the applications <-> shop relationship is implemented. */}
-      <div className="rounded-2xl border border-washi-3 bg-washi-2 p-8 text-center">
-        <p className="text-sm text-ink-3">
-          応募中の店舗の暗黙知タグはここに表示されます（近日公開予定）。
+    <div className="flex min-h-0 flex-1 flex-col overflow-auto">
+      <header className="flex flex-col gap-2 border-b border-[var(--line-soft)] bg-[var(--washi)] px-6 pb-5 pt-6 md:px-8">
+        <h1 className="font-serif text-2xl font-bold tracking-[0.06em] text-ink md:text-[26px]">
+          Archive ─ 暗黙知の閲覧
+        </h1>
+        <p className="text-[13px] leading-relaxed text-ink-3">
+          店舗の先代が蓄積した判断基準・暗黙知を閲覧できます。
         </p>
+      </header>
+      <div className="mx-auto w-full max-w-[1320px] px-6 py-7 md:px-8">
+        <div className="rounded-2xl border border-washi-3 bg-washi-2 p-8 text-center">
+          <p className="text-sm text-ink-3">
+            応募中の店舗の暗黙知タグはここに表示されます（近日公開予定）。
+          </p>
+        </div>
       </div>
-    </PageContainer>
+    </div>
   )
 }

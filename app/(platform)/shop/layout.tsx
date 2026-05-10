@@ -1,17 +1,10 @@
 import { redirect } from 'next/navigation'
 
 import DashboardSideNav from '@/features/dashboard/dashboard-side-nav'
+import { SHOP_NAV_ITEMS } from '@/features/dashboard/nav-items'
 import { getCurrentProfileState } from '@/lib/get-profile'
 import { parseUserRole } from '@/lib/roles'
 import { createClient } from '@/lib/supabase/server'
-
-const SHOP_NAV = [
-  { href: '/shop', label: '今日の作業場' },
-  { href: '/dashboard/profile', label: '店のプロフィール' },
-  { href: '/dashboard/archive', label: '暗黙知をためる（Archive）' },
-  { href: '/dashboard/agent', label: '後継者の相談（Agent）' },
-  { href: '/dashboard/settings', label: '設定・メンバー' },
-] as const
 
 export default async function ShopConsoleLayout({
   children,
@@ -32,10 +25,10 @@ export default async function ShopConsoleLayout({
   } = await supabase.auth.getUser()
 
   return (
-    <div className="flex min-h-[60vh] min-h-0 flex-1 flex-col md:flex-row">
+    <div className="paper-bg flex min-h-[60vh] min-h-0 flex-1 flex-col md:flex-row">
       <DashboardSideNav
-        title="店主コンソール"
-        items={[...SHOP_NAV]}
+        title="店主メニュー"
+        items={[...SHOP_NAV_ITEMS]}
         role="shop"
         profile={profile}
         email={user?.email}

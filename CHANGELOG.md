@@ -10,6 +10,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **デザインシステム刷新（モック準拠リデザイン）**: Claude Design で作成した TSUGITE Mock に合わせて UI を全面的にリデザイン。
+  - **デザイントークン**: カラーパレットをモック準拠の生成色系（`--washi` → 暖色 `#efe9da`）に変更。ネイビー（`--navy`）、リーフ（`--leaf`）、スカイ（`--sky`）を新規追加。`--shu` をモックの `--akane` 値 `#b85a2e` に更新。
+  - **フォント**: Geist Sans → Noto Sans JP、Geist Mono → JetBrains Mono に変更。Noto Serif JP のウェイトを拡充（300〜900）。
+  - **サイドナビ**: モックの Shell に準拠し、TSUGITE ロゴ SVG、アイコン＋サブテキスト付きナビ、店舗情報カード、アバターを追加。アクティブ状態を `bg-navy` に統一。ナビアイテムを `SHOP_NAV_ITEMS` / `SUCCESSOR_NAV_ITEMS` として export し、レイアウト間で共通化。
+  - **ホームページ（店主）**: ヒーローセクション（ネイビー背景＋進捗バー）、三本柱カード（Archive/Agent/Guide）を追加。
+  - **ホームページ（後継者）**: 三本柱カード（ステップ番号付き）に刷新。
+  - **各ページヘッダー**: `PageContainer` / `PageHeader` から、モック準拠のインラインヘッダー（serif タイトル、統一余白）に変更。
+  - **レイアウト背景**: `paper-bg` クラス（2色グラデーション）を全コンソールレイアウトに適用。
+
 - **ダッシュボード UI 一貫性**: `/dashboard/profile` を閲覧専用プレビューに変更（`PageContainer` / `PageHeader`）。プロフィール編集は設定の店舗情報・プロフィールタブに集約。`/dashboard/agent` は独自ヘッダーをやめ共通ヘッダーに統一し、`AgentChat` を flex 内で `min-h-0` 伸長。継ぎ手向け `/dashboard/archive` スタブも `PageContainer` / `PageHeader` で店主側 Archive と見出しトーンを揃えた。サイドナビのプロフィール文言を「（プレビュー）」に更新。
 
 - **UI/UX（フルリニューアル一式）**: プラットフォーム領域を `app/(platform)/layout.tsx` に収め、マーケティング（`SiteHeader` / `SiteFooter`）とは背景・視線の流れを分離。`/dashboard` はロールに応じて `/shop` または `/successor` へリダイレクトし、コンソールのホームを一本化。

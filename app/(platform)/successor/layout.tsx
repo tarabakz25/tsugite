@@ -1,19 +1,11 @@
 import { redirect } from 'next/navigation'
 
 import DashboardSideNav from '@/features/dashboard/dashboard-side-nav'
+import { SUCCESSOR_NAV_ITEMS } from '@/features/dashboard/nav-items'
 import SuccessorMobileNav from '@/features/dashboard/successor-mobile-nav'
 import { getCurrentProfileState } from '@/lib/get-profile'
 import { parseUserRole } from '@/lib/roles'
 import { createClient } from '@/lib/supabase/server'
-
-const SUCCESSOR_NAV = [
-  { href: '/successor', label: 'ホーム' },
-  { href: '/dashboard/profile', label: 'プロフィール' },
-  { href: '/dashboard/archive', label: '暗黙知を見る（Archive）' },
-  { href: '/dashboard/guide', label: 'Guide（机上練習）' },
-  { href: '/dashboard/agent', label: 'Agent（迷ったら相談）' },
-  { href: '/dashboard/settings', label: '設定' },
-] as const
 
 export default async function SuccessorConsoleLayout({
   children,
@@ -38,11 +30,11 @@ export default async function SuccessorConsoleLayout({
 
   return (
     <>
-      <div className="flex min-h-[60vh] min-h-0 flex-1 flex-col pb-[calc(5.25rem+env(safe-area-inset-bottom))] md:flex-row md:pb-0">
+      <div className="paper-bg flex min-h-[60vh] min-h-0 flex-1 flex-col pb-[calc(5.25rem+env(safe-area-inset-bottom))] md:flex-row md:pb-0">
         <DashboardSideNav
           asideMode="desktop-only"
-          title="継ぎ手コンソール"
-          items={[...SUCCESSOR_NAV]}
+          title="三つの機能"
+          items={[...SUCCESSOR_NAV_ITEMS]}
           role="successor"
           profile={profile}
           email={user?.email}

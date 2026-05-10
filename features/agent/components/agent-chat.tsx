@@ -181,7 +181,7 @@ export default function AgentChat({ shopId }: AgentChatProps) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-washi">
+    <div className="flex min-h-0 flex-1 flex-col bg-[var(--washi)]">
       <audio
         ref={audioRef}
         onEnded={() => setIsPlayingAudio(false)}
@@ -341,7 +341,7 @@ export default function AgentChat({ shopId }: AgentChatProps) {
         </div>
       ) : null}
 
-      <div className="border-t border-washi-3 bg-white/94 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-5 backdrop-blur">
+      <div className="border-t border-washi-3 bg-paper-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur">
         <PageContainer maxWidth="2xl" className="">
           <form
             onSubmit={(event) => {
@@ -353,82 +353,74 @@ export default function AgentChat({ shopId }: AgentChatProps) {
             }}
             className="flex flex-col gap-3"
           >
-            <div className="flex gap-3">
-              <div className="relative flex flex-1 items-end rounded-[1.375rem] border border-washi-3 bg-white shadow-inner focus-within:border-shu focus-within:ring-4 focus-within:ring-shu/25">
-                {speechSupported ? (
-                  <Button
-                    aria-pressed={speechListening}
-                    className={cn(
-                      'relative z-10 m-3 size-14 shrink-0 rounded-2xl p-0 md:size-[52px]',
-                      speechListening &&
-                        'bg-danger text-white shadow-lg shadow-danger/30 hover:bg-danger-strong',
-                    )}
-                    type="button"
-                    variant={speechListening ? 'danger' : 'outline'}
-                    onClick={() => toggleSpeechRecognition()}
-                    disabled={isLoading}
-                  >
-                    {speechListening ? (
-                      <MicOff aria-hidden className="mx-auto size-[22px]" />
-                    ) : (
-                      <Mic aria-hidden className="mx-auto size-[22px]" />
-                    )}
-                    <span className="sr-only">
-                      {speechListening ? '音声入力を終了します' : '音声入力'}
-                    </span>
-                  </Button>
-                ) : null}
-                <textarea
-                  aria-label="相談内容"
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  placeholder="質問や状況を入力…"
-                  rows={speechSupported ? 2 : 3}
+            <div className="flex items-center gap-3 rounded-[14px] border border-washi-3 bg-white px-4 py-3">
+              {speechSupported ? (
+                <button
+                  aria-pressed={speechListening}
                   className={cn(
-                    'relative z-[1] min-h-[112px] w-full resize-none rounded-[1.35rem] border-none bg-transparent py-[1.125rem] pr-36 text-base leading-snug text-ink shadow-none outline-none placeholder:text-ink-3 disabled:bg-washi-3/40',
-                    speechSupported ? 'pl-4' : 'pl-6',
+                    'flex size-10 shrink-0 items-center justify-center rounded-lg border transition-colors',
+                    speechListening
+                      ? 'border-danger bg-danger text-white'
+                      : 'border-washi-3 bg-transparent text-ink-3 hover:bg-washi',
                   )}
+                  type="button"
+                  onClick={() => toggleSpeechRecognition()}
                   disabled={isLoading}
-                  onKeyDown={(keydownEvent) => {
-                    if (keydownEvent.key === 'Enter' && !keydownEvent.shiftKey) {
-                      keydownEvent.preventDefault()
-                      const trimmed = input.trim()
-                      if (trimmed && !isLoading) {
-                        sendMessage({ text: trimmed })
-                        setInput('')
-                      }
-                    }
-                  }}
-                />
-                <Button
-                  aria-label="送信"
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className={cn(
-                    'absolute bottom-3 right-3 z-10 h-12 min-w-[3.75rem] gap-2 rounded-2xl px-4 shadow-lg shadow-shu/30',
-                  )}
-                  size="lg"
                 >
-                  <SendHorizontal aria-hidden className="size-5 shrink-0" />
-                  <span className="hidden text-sm sm:inline">送信</span>
-                </Button>
-              </div>
+                  {speechListening ? (
+                    <MicOff aria-hidden className="size-[18px]" />
+                  ) : (
+                    <Mic aria-hidden className="size-[18px]" />
+                  )}
+                  <span className="sr-only">
+                    {speechListening ? '音声入力を終了します' : '音声入力'}
+                  </span>
+                </button>
+              ) : null}
+              <input
+                aria-label="相談内容"
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                placeholder="佐藤さんに聞いてみたいことを書いてみてください…"
+                className="min-w-0 flex-1 border-none bg-transparent text-sm text-ink outline-none placeholder:text-ink-3"
+                disabled={isLoading}
+                onKeyDown={(keydownEvent) => {
+                  if (keydownEvent.key === 'Enter' && !keydownEvent.shiftKey) {
+                    keydownEvent.preventDefault()
+                    const trimmed = input.trim()
+                    if (trimmed && !isLoading) {
+                      sendMessage({ text: trimmed })
+                      setInput('')
+                    }
+                  }
+                }}
+              />
+              <Button
+                aria-label="送信"
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="h-9 gap-1.5 rounded-lg px-4 text-sm"
+                size="sm"
+              >
+                聞く
+                <SendHorizontal aria-hidden className="size-3.5 shrink-0" />
+              </Button>
             </div>
-            <div className="flex flex-wrap items-start justify-between gap-2 px-2 text-[0.813rem] text-ink-3">
+            <div className="flex flex-wrap items-start justify-between gap-2 px-1 text-[11px] text-ink-3">
               {!speechSupported ? (
                 <p>この環境ではブラウザ音声入力が使えません。</p>
               ) : speechListening ? (
                 <p className="flex items-center gap-2 font-semibold text-shu">
                   <span
                     aria-hidden
-                    className="inline-flex h-2 w-2 animate-pulse rounded-full bg-shu"
+                    className="inline-flex size-1.5 animate-pulse rounded-full bg-shu"
                   />
                   聞き取り中です。話してください。
                 </p>
               ) : (
-                <p className="text-ink-2">マイクから話しかけると自動で入力欄に転記されます。</p>
+                <p className="text-ink-3">マイクから話しかけると自動で入力欄に転記されます。</p>
               )}
-              <p className="text-right md:text-right">Shift + Enter で改行</p>
+              <p>Shift + Enter で改行</p>
             </div>
           </form>
         </PageContainer>

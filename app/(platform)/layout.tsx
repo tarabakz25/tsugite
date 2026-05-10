@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
  */
 export default function PlatformLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="flex min-h-svh min-h-[100dvh] flex-1 flex-col bg-surface-muted text-ink">
+    <div className="flex min-h-svh min-h-[100dvh] flex-1 flex-col bg-[var(--washi)] text-ink">
       {children}
     </div>
   )

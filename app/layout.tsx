@@ -1,24 +1,29 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono, Noto_Serif_JP } from 'next/font/google'
+import { Noto_Sans_JP, Noto_Serif_JP, JetBrains_Mono } from 'next/font/google'
 
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const notoSansJP = Noto_Sans_JP({
+  variable: '--font-noto-sans-jp',
   subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  display: 'swap',
+  preload: false,
 })
 
 const notoSerifJP = Noto_Serif_JP({
   variable: '--font-noto-serif-jp',
   subsets: ['latin'],
-  weight: ['400', '600'],
+  weight: ['300', '400', '500', '600', '700', '900'],
   display: 'swap',
   preload: false,
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -35,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="ja"
-      className={`${geistSans.variable} ${geistMono.variable} ${notoSerifJP.variable} h-full antialiased`}
+      className={`${notoSansJP.variable} ${notoSerifJP.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
