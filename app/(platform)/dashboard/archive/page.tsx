@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 
+import PageContainer from '@/components/layout/page-container'
+import PageHeader from '@/components/layout/page-header'
 import { createClient } from '@/lib/supabase/server'
 import ArchiveContent from '@/features/archive/components/archive-content'
 import type { Interview, TacitTag } from '@/features/archive/types'
@@ -25,7 +27,7 @@ export default async function DashboardArchivePage() {
   if (role === 'shop') {
     const shop = await ensureShopForProfile(supabase, user.id, profile?.shop_profile)
     if (!shop) redirect('/dashboard')
-     
+
     const shopId = shop!.id
 
     const { data: interviewsData } = await supabase
@@ -66,15 +68,11 @@ export default async function DashboardArchivePage() {
 
   // successor
   return (
-    <div className="space-y-8 p-6">
-      <div>
-        <p className="mb-1 text-xs font-medium uppercase tracking-widest text-ink-3">Archive</p>
-        <h1 className="text-2xl font-bold text-ink">暗黙知タグ閲覧</h1>
-        <p className="mt-2 text-sm text-ink-3">
-          店舗の先代が蓄積してきた判断基準・暗黙知を閲覧できます。Agent
-          への質問の参考にしてください。
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Archive — 暗黙知の閲覧"
+        description="店舗の先代が蓄積した判断基準・暗黙知を閲覧できます。Agent への質問の参考にしてください。"
+      />
 
       {/* TODO: query tacit_tags for shops the successor has applied to,
           once the applications <-> shop relationship is implemented. */}
@@ -83,6 +81,6 @@ export default async function DashboardArchivePage() {
           応募中の店舗の暗黙知タグはここに表示されます（近日公開予定）。
         </p>
       </div>
-    </div>
+    </PageContainer>
   )
 }

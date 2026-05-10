@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 
 const SHOP_NAV = [
   { href: '/shop', label: '今日の作業場' },
-  { href: '/dashboard/profile', label: '店のプロフィール' },
+  { href: '/dashboard/profile', label: '店のプロフィール（プレビュー）' },
   { href: '/dashboard/archive', label: '暗黙知をためる（Archive）' },
   { href: '/dashboard/agent', label: '後継者の相談（Agent）' },
   { href: '/dashboard/settings', label: '設定・メンバー' },
@@ -16,7 +16,7 @@ const SHOP_NAV = [
 
 const SUCCESSOR_NAV = [
   { href: '/successor', label: 'ホーム' },
-  { href: '/dashboard/profile', label: 'プロフィール' },
+  { href: '/dashboard/profile', label: 'プロフィール（プレビュー）' },
   { href: '/dashboard/archive', label: '暗黙知を見る（Archive）' },
   { href: '/dashboard/guide', label: 'Guide（机上練習）' },
   { href: '/dashboard/agent', label: 'Agent（迷ったら相談）' },

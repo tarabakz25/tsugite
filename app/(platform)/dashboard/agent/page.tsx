@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 
 import AgentChat from '@/features/agent/components/agent-chat'
-import Container from '@/components/ui/container'
+import PageContainer from '@/components/layout/page-container'
+import PageHeader from '@/components/layout/page-header'
 import { createClient } from '@/lib/supabase/server'
 import { ensureShopForProfile } from '@/lib/shops'
 import { parseUserRole } from '@/lib/roles'
@@ -21,27 +22,32 @@ export default async function DashboardAgentPage() {
     .maybeSingle()
 
   const role = parseUserRole(profile)
+  if (!role) redirect('/onboarding/role')
+
+  const header =
+    role === 'shop'
+      ? {
+          title: 'Agent — AI相談',
+          description: '蓄積された暗黙知をもとに、店舗運営の疑問にお答えします。',
+        }
+      : {
+          title: 'Agent — 先代に相談',
+          description: '困ったことや判断に迷うことがあれば、先代の経験と知恵を参考にできます。',
+        }
 
   if (role === 'shop') {
     const shop = await ensureShopForProfile(supabase, user.id, profile?.shop_profile)
     if (!shop) redirect('/dashboard')
-     
-    const shopId = shop!.id
+
+    const shopId = shop.id
 
     return (
-      <div className="flex h-[calc(100vh-4rem)] flex-col">
-        <div className="border-b border-ink/10 bg-washi p-4">
-          <Container>
-            <h1 className="text-2xl font-bold text-ink">Agent - AI相談</h1>
-            <p className="mt-1 text-sm text-ink/60">
-              蓄積された暗黙知をもとに、店舗運営の疑問にお答えします。
-            </p>
-          </Container>
-        </div>
-        <div className="flex-1 overflow-hidden">
-          <Container className="h-full">
-            <AgentChat shopId={shopId} />
-          </Container>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PageContainer maxWidth="7xl" className="shrink-0 pb-4 pt-2 sm:pt-4">
+          <PageHeader title={header.title} description={header.description} />
+        </PageContainer>
+        <div className="flex min-h-0 flex-1 flex-col border-t border-washi-3">
+          <AgentChat shopId={shopId} />
         </div>
       </div>
     )
@@ -53,19 +59,12 @@ export default async function DashboardAgentPage() {
   const mockShopId = '00000000-0000-0000-0000-000000000001'
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
-      <div className="border-b border-ink/10 bg-washi p-4">
-        <Container>
-          <h1 className="text-2xl font-bold text-ink">先代女将に相談</h1>
-          <p className="mt-1 text-sm text-ink/60">
-            困ったことや判断に迷うことがあれば、先代の経験と知恵を参考にできます。
-          </p>
-        </Container>
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <Container className="h-full">
-          <AgentChat shopId={mockShopId} />
-        </Container>
+    <div className="flex min-h-0 flex-1 flex-col pb-[calc(5.25rem+env(safe-area-inset-bottom))] md:pb-0">
+      <PageContainer maxWidth="7xl" className="shrink-0 pb-4 pt-2 sm:pt-4">
+        <PageHeader title={header.title} description={header.description} />
+      </PageContainer>
+      <div className="flex min-h-0 flex-1 flex-col border-t border-washi-3">
+        <AgentChat shopId={mockShopId} />
       </div>
     </div>
   )

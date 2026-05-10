@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **ダッシュボード UI 一貫性**: `/dashboard/profile` を閲覧専用プレビューに変更（`PageContainer` / `PageHeader`）。プロフィール編集は設定の店舗情報・プロフィールタブに集約。`/dashboard/agent` は独自ヘッダーをやめ共通ヘッダーに統一し、`AgentChat` を flex 内で `min-h-0` 伸長。継ぎ手向け `/dashboard/archive` スタブも `PageContainer` / `PageHeader` で店主側 Archive と見出しトーンを揃えた。サイドナビのプロフィール文言を「（プレビュー）」に更新。
+
 - **UI/UX（フルリニューアル一式）**: プラットフォーム領域を `app/(platform)/layout.tsx` に収め、マーケティング（`SiteHeader` / `SiteFooter`）とは背景・視線の流れを分離。`/dashboard` はロールに応じて `/shop` または `/successor` へリダイレクトし、コンソールのホームを一本化。
 - **デザイントークン**: `globals.css` の `--ink-3` / `--ink-4` を読みやすさ向けに調整し、`body` の既定フォントサイズをやや拡大（本文可読性・店主層前提）。
 - **店主コンソール**: `dashboard-side-nav` / `shop/layout` でラベルを「やること」寄りに再編。`shop/page.tsx` をタスク導線＋KPI の2カラムに刷新。

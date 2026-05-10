@@ -181,7 +181,7 @@ export default function AgentChat({ shopId }: AgentChatProps) {
   }
 
   return (
-    <div className="flex min-h-[min(880px,_90svh)] flex-1 flex-col bg-washi md:min-h-[70vh]">
+    <div className="flex min-h-0 flex-1 flex-col bg-washi">
       <audio
         ref={audioRef}
         onEnded={() => setIsPlayingAudio(false)}
