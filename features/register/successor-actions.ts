@@ -62,5 +62,5 @@ export async function saveSuccessorProfile(
     return { error: 'required' }
   }
 
-  redirect('/dashboard')
+  redirect('/successor')
 }

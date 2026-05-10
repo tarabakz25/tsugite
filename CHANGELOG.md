@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- ミドルウェア（`lib/supabase/proxy.ts` の `updateSession`）: Supabase セッションがある場合、`/` と `/login` へのアクセスは `/dashboard` へリダイレクト。`/login` で `returnTo` または `next` が `sanitizeReturnTo` で有効かつ `/` でない場合はそのパスへ遷移（ログイン画面のスキップ時もディープリンク尊重）。`/login` 自身への returnTo は無限ループ防止のため無視。
+
 ### Added
 
 - `app/dashboard/` — `/shop/*` と `/successor/*` を `/dashboard/*` に統合。ロール（`shop` / `successor`）で表示・ナビを分岐させる単一ルートを新設
@@ -30,6 +34,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `features/agent/components/agent-chat.tsx`: `cn` のインポートが欠落していたため Vercel ビルドで TypeScript エラーが発生していた。`@/lib/cn` からのインポートを追加。
 - `features/agent/components/agent-chat.tsx`: `PageContainer` の `maxWidth` に存在しない値 `"3xl"` を使用していたため TypeScript ビルドエラーが発生していた。有効な値 `"2xl"` に修正。
+- ログイン済みユーザーの `/login` → `/dashboard` 自動遷移で、middleware が更新した Supabase セッション Cookie を redirect レスポンスへ引き継ぐよう修正。あわせて dashboard/onboarding 系 layout のログイン判定とプロフィール取得判定を分離し、`profiles` 取得失敗時に `/dashboard` ↔ `/login` の 307 ループが起きないようにした。
+- Google OAuth (`/auth/callback`): `exchangeCodeForSession` で付与されるセッション Cookie を、`lib/supabase/oauth-callback.ts` の `createOAuthCallbackSupabase` 経由で返却する同一の `NextResponse.redirect` に書き込むよう変更。コード交換後に別の redirect レスポンスだけ返していたため `Set-Cookie` が欠落し、middleware が未ログイン扱いで `/onboarding`→`/login` になる事象を防ぐ。`setAll` が複数回呼ばれる場合（チャンク分割 JWT 等）は各バッチを `Map` にマージしてから redirect を組み直し、ミドルウェアと同様に `request.cookies` へも反映する。
+- Google OAuth 後の既定遷移を要件 `AUTH-03` に合わせ、`profiles.role` が `shop` / `successor` のときは `/shop` / `/successor`、未設定は `/onboarding/role`。`sanitizeReturnTo` で許可された `next` が付いている場合は従来どおりそれを優先。
+- `lib/supabase/proxy.ts`: 保護対象に `/shop`・`/successor` を追加。未ログイン時は `/login?returnTo=…` で元のパスへ戻れるようにした。
+- `app/onboarding/role`・`onboarding/shop`・`onboarding/successor`、および店/継ぎ手プロフィール保存（`features/register/*-actions`）後のリダイレクト先をロール別ホーム（`/shop` / `/successor`）に統一。
+- **`/shop` と `/successor` のコンソール入口を再構成** — 概要とサイドナビを `app/shop/layout.tsx` / `app/successor/layout.tsx` と各 `page.tsx` で提供。機能画面はサイドナビから既存の `/dashboard/*` へ遷移。`/shop/profile`・`/shop/settings`（および successor 側の対応ペア）は `/dashboard/profile`・`/dashboard/settings` へのリダイレクトのみ。
 
 ### Added
 

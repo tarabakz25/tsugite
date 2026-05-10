@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 
 import SettingsTabNav from '@/features/settings/settings-tab-nav'
-import { getCurrentProfile } from '@/lib/get-profile'
+import { getCurrentProfileState } from '@/lib/get-profile'
 import { parseUserRole } from '@/lib/roles'
 
 const SHOP_SETTINGS_TABS = [
@@ -15,13 +15,10 @@ const SUCCESSOR_SETTINGS_TABS = [
   { href: '/dashboard/settings/account', label: 'アカウント' },
 ]
 
-export default async function DashboardSettingsLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const profile = await getCurrentProfile()
-  if (!profile) redirect('/login')
+export default async function DashboardSettingsLayout({ children }: { children: React.ReactNode }) {
+  const { profile, user } = await getCurrentProfileState()
+  if (!user) redirect('/login')
+  if (!profile) redirect('/onboarding/role')
 
   const role = parseUserRole(profile)
   if (!role) redirect('/onboarding/role')

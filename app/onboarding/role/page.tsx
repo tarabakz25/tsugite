@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation'
 
 import Container from '@/components/ui/container'
 import RoleForm from '@/features/onboarding/role-form'
-import { getCurrentProfile } from '@/lib/get-profile'
-import { parseUserRole } from '@/lib/roles'
+import { getCurrentProfileState } from '@/lib/get-profile'
+import { homePathForRole, parseUserRole } from '@/lib/roles'
 
 type PageProps = {
   searchParams: Promise<{ error?: string }>
@@ -11,11 +11,12 @@ type PageProps = {
 
 export default async function OnboardingRolePage({ searchParams }: PageProps) {
   const sp = await searchParams
-  const profile = await getCurrentProfile()
-  if (!profile) redirect('/login')
+  const { profile, user } = await getCurrentProfileState()
+  if (!user) redirect('/login')
 
   const role = parseUserRole(profile)
-  if (role === 'shop' || role === 'successor') redirect('/dashboard')
+  const home = role ? homePathForRole(role) : null
+  if (home) redirect(home)
 
   return (
     <main className="flex flex-1 flex-col bg-zinc-50 py-16 dark:bg-black">

@@ -2,16 +2,17 @@ import { redirect } from 'next/navigation'
 
 import Container from '@/components/ui/container'
 import ShopProfileForm from '@/features/register/shop-profile-form'
-import { getCurrentProfile } from '@/lib/get-profile'
+import { getCurrentProfileState } from '@/lib/get-profile'
 import { parseUserRole } from '@/lib/roles'
 
 export default async function RegisterShopPage() {
-  const profile = await getCurrentProfile()
-  if (!profile) redirect('/login')
+  const { profile, user } = await getCurrentProfileState()
+  if (!user) redirect('/login')
+  if (!profile) redirect('/onboarding/role')
 
   const role = parseUserRole(profile)
   if (!role) redirect('/onboarding/role')
-  if (role !== 'shop') redirect('/dashboard')
+  if (role !== 'shop') redirect(role === 'successor' ? '/successor' : '/onboarding/role')
 
   const sp = profile.shop_profile
 

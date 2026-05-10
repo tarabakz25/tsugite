@@ -2,16 +2,17 @@ import { redirect } from 'next/navigation'
 
 import Container from '@/components/ui/container'
 import SuccessorProfileForm from '@/features/register/successor-profile-form'
-import { getCurrentProfile } from '@/lib/get-profile'
+import { getCurrentProfileState } from '@/lib/get-profile'
 import { parseUserRole } from '@/lib/roles'
 
 export default async function RegisterSuccessorPage() {
-  const profile = await getCurrentProfile()
-  if (!profile) redirect('/login')
+  const { profile, user } = await getCurrentProfileState()
+  if (!user) redirect('/login')
+  if (!profile) redirect('/onboarding/role')
 
   const role = parseUserRole(profile)
   if (!role) redirect('/onboarding/role')
-  if (role !== 'successor') redirect('/dashboard')
+  if (role !== 'successor') redirect(role === 'shop' ? '/shop' : '/onboarding/role')
 
   const sp = profile.successor_profile
 
