@@ -10,9 +10,11 @@ export default async function DashboardPage() {
     return (
       <section className="flex flex-col gap-10 py-10">
         <Container>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">店ダッシュボード</h1>
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+            店ダッシュボード
+          </h1>
           <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
-            ひとまず KPI はダミー表示です。Hono と DB を載せたら掲載数・応募数・返信 SLA
+            ひとまず KPI はダミー表示です。API と DB を載せたら掲載数・応募数・返信 SLA
             を並べられます。
           </p>
 

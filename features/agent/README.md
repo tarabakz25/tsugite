@@ -33,15 +33,15 @@ The Agent uses Retrieval Augmented Generation (RAG) to reference accumulated tac
 
 ### Technical Stack
 
-| Layer         | Technology                             |
-| ------------- | -------------------------------------- |
-| DB Schema     | Drizzle + Supabase migrations          |
-| Chat UI       | Next.js + Vercel AI SDK                |
-| Embedding     | OpenAI text-embedding-3-small          |
-| Vector Search | Supabase RPC + pgvector                |
-| LLM           | GPT-4o                                 |
-| TTS           | OpenAI TTS API (nova voice)            |
-| Backend       | Next.js Route Handler / Hono on Vercel |
+| Layer         | Technology                                 |
+| ------------- | ------------------------------------------ |
+| DB Schema     | Drizzle + Supabase migrations              |
+| Chat UI       | Next.js + Vercel AI SDK                    |
+| Embedding     | OpenAI text-embedding-3-small              |
+| Vector Search | Supabase RPC + pgvector                    |
+| LLM           | GPT-4o                                     |
+| TTS           | OpenAI TTS API (nova voice)                |
+| Backend       | Next.js Route Handlers (`app/api/agent/*`) |
 
 ## File Structure
 
@@ -54,8 +54,9 @@ features/agent/
 lib/agent/
 └── rag.ts                   # RAG utilities (embedding, search, prompt)
 
-app/api/[[...route]]/
-└── route.ts                 # API endpoints (/agent/chat, /agent/tts)
+app/api/agent/
+├── chat/route.ts            # POST /api/agent/chat
+└── tts/route.ts             # POST /api/agent/tts
 
 app/successor/agent/
 └── page.tsx                 # Agent page
