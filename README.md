@@ -10,18 +10,18 @@
 
 ## Tech Stack
 
-| カテゴリ             | 技術                                                      |
-| -------------------- | --------------------------------------------------------- |
-| フレームワーク       | Next.js 16 (App Router)                                   |
-| UI                   | React 19                                                  |
-| 言語                 | TypeScript 5（strict）                                    |
-| スタイリング         | Tailwind CSS v4                                           |
-| パッケージマネージャ | Bun                                                       |
-| 開発環境管理         | Nix flakes                                                |
-| Linter / Formatter   | ESLint 9 + Prettier 3                                     |
-| Git フック           | Husky + lint-staged + commitlint                          |
-| バックエンド         | Hono 4（ヘルス等の軽量 API）、Supabase（Postgres + Auth） |
-| CI/CD                | GitHub Actions                                            |
+| カテゴリ             | 技術                                                            |
+| -------------------- | --------------------------------------------------------------- |
+| フレームワーク       | Next.js 16 (App Router)                                         |
+| UI                   | React 19                                                        |
+| 言語                 | TypeScript 5（strict）                                          |
+| スタイリング         | Tailwind CSS v4                                                 |
+| パッケージマネージャ | Bun                                                             |
+| 開発環境管理         | Nix flakes                                                      |
+| Linter / Formatter   | ESLint 9 + Prettier 3                                           |
+| Git フック           | Husky + lint-staged + commitlint                                |
+| バックエンド         | Next.js Route Handlers（`/api/*`）、Supabase（Postgres + Auth） |
+| CI/CD                | GitHub Actions                                                  |
 
 ## セットアップ
 
@@ -66,7 +66,7 @@ bun dev
 
 ```
 app/                   # Next.js App Router ルート
-app/api/[[...route]]/  # Hono エントリーポイント（例: `/api/health`）
+app/api/               # Route Handlers（例: `health/route.ts` → `/api/health`）
 proxy.ts               # Next.js 16 のプロキシ（Supabase セッション更新・保護ルート）
 components/ui/         # 再利用可能な UI プリミティブ
 features/<name>/       # 機能モジュール（components / hooks / utils / types / api）
@@ -76,16 +76,14 @@ hooks/                 # グローバルカスタムフック
 types/                 # グローバル型定義
 ```
 
-## API（Hono）
+## API（Route Handlers）
 
-バックエンドは [Hono](https://hono.dev/) を Next.js の Route Handler にマウントする構成。現状はヘルスチェックなど最小限。
+HTTP API は App Router の [`route.ts`](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) で機能ごとに分割している（例: `app/api/agent/chat/route.ts` → `POST /api/agent/chat`）。
 
 ```bash
 curl http://localhost:3000/api/health
 # → { "status": "ok" }
 ```
-
-追加ルートは `app/api/[[...route]]/route.ts` でマウントする（例: `app.route('/example', exampleRoute)` → `GET /api/example`）。
 
 ## 主要ルート（MVP）
 

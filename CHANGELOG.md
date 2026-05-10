@@ -8,8 +8,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **デザインシステム刷新（モック準拠リデザイン）**: Claude Design で作成した TSUGITE Mock に合わせて UI を全面的にリデザイン。
+  - **デザイントークン**: カラーパレットをモック準拠の生成色系（`--washi` → 暖色 `#efe9da`）に変更。ネイビー（`--navy`）、リーフ（`--leaf`）、スカイ（`--sky`）を新規追加。`--shu` をモックの `--akane` 値 `#b85a2e` に更新。
+  - **フォント**: Geist Sans → Noto Sans JP、Geist Mono → JetBrains Mono に変更。Noto Serif JP のウェイトを拡充（300〜900）。
+  - **サイドナビ**: モックの Shell に準拠し、TSUGITE ロゴ SVG、アイコン＋サブテキスト付きナビ、店舗情報カード、アバターを追加。アクティブ状態を `bg-navy` に統一。ナビアイテムを `SHOP_NAV_ITEMS` / `SUCCESSOR_NAV_ITEMS` として export し、レイアウト間で共通化。
+  - **ホームページ（店主）**: ヒーローセクション（ネイビー背景＋進捗バー）、三本柱カード（Archive/Agent/Guide）を追加。
+  - **ホームページ（後継者）**: 三本柱カード（ステップ番号付き）に刷新。
+  - **各ページヘッダー**: `PageContainer` / `PageHeader` から、モック準拠のインラインヘッダー（serif タイトル、統一余白）に変更。
+  - **レイアウト背景**: `paper-bg` クラス（2色グラデーション）を全コンソールレイアウトに適用。
+
+- **ダッシュボード UI 一貫性**: `/dashboard/profile` を閲覧専用プレビューに変更（`PageContainer` / `PageHeader`）。プロフィール編集は設定の店舗情報・プロフィールタブに集約。`/dashboard/agent` は独自ヘッダーをやめ共通ヘッダーに統一し、`AgentChat` を flex 内で `min-h-0` 伸長。継ぎ手向け `/dashboard/archive` スタブも `PageContainer` / `PageHeader` で店主側 Archive と見出しトーンを揃えた。サイドナビのプロフィール文言を「（プレビュー）」に更新。
+
+- **UI/UX（フルリニューアル一式）**: プラットフォーム領域を `app/(platform)/layout.tsx` に収め、マーケティング（`SiteHeader` / `SiteFooter`）とは背景・視線の流れを分離。`/dashboard` はロールに応じて `/shop` または `/successor` へリダイレクトし、コンソールのホームを一本化。
+- **デザイントークン**: `globals.css` の `--ink-3` / `--ink-4` を読みやすさ向けに調整し、`body` の既定フォントサイズをやや拡大（本文可読性・店主層前提）。
+- **店主コンソール**: `dashboard-side-nav` / `shop/layout` でラベルを「やること」寄りに再編。`shop/page.tsx` をタスク導線＋KPI の2カラムに刷新。
+- **継ぎ手コンソール**: モバイルでサイドナビを非表示（`asideMode="desktop-only"`）し、`successor-mobile-nav.tsx` のボトムナビと「その他」シート（プロフィール・設定）を追加。
+- **Guide**: `guide-interface.tsx` でモバイルはカメラ主体＋下端オーバーレイ、`feedback-display.tsx` でデザイントークンに統合（未定義の `sumi` クラス除去）。`/dashboard/guide` から別デザインの `AppShell` を外し、継ぎ手専用ルートのみに整理。店主アクセス時は `/shop` へリダイレクト。
+- **Agent**: メッセージと引用ブロックを縦並びに修正、`Web Speech API` による音声入力ボタン、送信まわりのタッチターゲットと余白・コントラストを調整（`features/agent/components/agent-chat.tsx`）。
+- **Design System**: `DESIGN.md` を作成し、デザインシステムとUI実装の入口・検証導線を整備。詳細は `design/components.md` および `design/patterns.md` に分離。
+
+- **API**: Hono のキャッチオール（`app/api/[[...route]]`）をやめ、Next.js App Router の標準 Route Handler に分割。URL（`/api/health`、`/api/agent/*`、`/api/guide/*`、`/api/archive/*`）は互換維持。`maxDuration = 300` は文字起こし・抽出など長時間処理が必要な archive 系のみに限定。共通処理は `lib/api/http.ts`（JSON バリデーション・エラー応答）、`lib/api/auth.ts`、`lib/api/agent-access.ts` に集約。依存から `hono` と `@hono/zod-validator` を削除。
+- ミドルウェア（`lib/supabase/proxy.ts` の `updateSession`）: Supabase セッションがある場合、`/` と `/login` へのアクセスは `/dashboard` へリダイレクト。`/login` で `returnTo` または `next` が `sanitizeReturnTo` で有効かつ `/` でない場合はそのパスへ遷移（ログイン画面のスキップ時もディープリンク尊重）。`/login` 自身への returnTo は無限ループ防止のため無視。
+
 ### Added
 
+- `app/dashboard/` — `/shop/*` と `/successor/*` を `/dashboard/*` に統合。ロール（`shop` / `successor`）で表示・ナビを分岐させる単一ルートを新設
+  - `app/dashboard/layout.tsx`: ロール別サイドナビ（shop: 概要/プロフィール/Archive/Agent/設定、successor: +Guide）
+  - `app/dashboard/page.tsx`: ロール別ダッシュボードトップ
+  - `app/dashboard/profile/page.tsx`: ロール別プロフィールフォーム
+  - `app/dashboard/archive/page.tsx`: ロール別（shop: ArchiveContent、successor: タグ閲覧スタブ）
+  - `app/dashboard/archive/[id]/page.tsx`: shop 専用インタビュー詳細（successor は `/dashboard/archive` へリダイレクト）
+  - `app/dashboard/archive/[id]/_components/transcribe-button.tsx`: 文字起こしボタン（shop 専用詳細ページ用）
+  - `app/dashboard/guide/page.tsx`: successor 専用 Guide ページ（shop は `/dashboard` にリダイレクト）
+  - `app/dashboard/agent/page.tsx`: ロール別 Agent（shop: ensureShopForProfile、successor: mockShopId で仮置き）
+  - `app/dashboard/settings/layout.tsx`: ロール別タブ（shop: 店舗情報/メンバー/アカウント、successor: プロフィール/アカウント）
+  - `app/dashboard/settings/page.tsx`: ロール別デフォルトリダイレクト
+  - `app/dashboard/settings/shop/page.tsx`, `members/page.tsx`, `profile/page.tsx`, `account/page.tsx`: 設定サブページ（既存フォームを再利用）
 - `app/shop/guide/scenes/new`: Guide の正解シーン登録画面を追加。`scene_name`, `season`, `correct_state` JSON を `reference_scenes` に保存できるようにした
 - `features/guide/components/reference-scene-form.tsx`: 正解シーン登録用フォームを追加し、不正な JSON や空オブジェクトを保存前に拒否するようにした
 - `features/guide/actions.ts`: Archive の `tacit_tags` から OpenAI `gpt-4o` で `reference_scenes` を自動生成し、`source_tag_id` で元タグに紐づける Server Action を追加
@@ -37,6 +73,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `features/agent/components/agent-chat.tsx`: `cn` のインポートが欠落していたため Vercel ビルドで TypeScript エラーが発生していた。`@/lib/cn` からのインポートを追加。
 - `features/agent/components/agent-chat.tsx`: `PageContainer` の `maxWidth` に存在しない値 `"3xl"` を使用していたため TypeScript ビルドエラーが発生していた。有効な値 `"2xl"` に修正。
+- `/onboarding/role`: `profiles` 行が未作成のユーザーでもロール選択を保存できるよう、`setUserRole` を `update` から `upsert` に変更。`profiles_insert_own` RLS policy を追加し、認証済みユーザーが自分の profile 行だけ作成できるようにした。店/継ぎ手プロフィール保存でも 0 件 update を成功扱いしないよう検出する。
+- ログイン済みユーザーの `/login` → `/dashboard` 自動遷移で、middleware が更新した Supabase セッション Cookie を redirect レスポンスへ引き継ぐよう修正。あわせて dashboard/onboarding 系 layout のログイン判定とプロフィール取得判定を分離し、`profiles` 取得失敗時に `/dashboard` ↔ `/login` の 307 ループが起きないようにした。
+- Google OAuth (`/auth/callback`): `exchangeCodeForSession` で付与されるセッション Cookie を、`lib/supabase/oauth-callback.ts` の `createOAuthCallbackSupabase` 経由で返却する同一の `NextResponse.redirect` に書き込むよう変更。コード交換後に別の redirect レスポンスだけ返していたため `Set-Cookie` が欠落し、middleware が未ログイン扱いで `/onboarding`→`/login` になる事象を防ぐ。`setAll` が複数回呼ばれる場合（チャンク分割 JWT 等）は各バッチを `Map` にマージしてから redirect を組み直し、ミドルウェアと同様に `request.cookies` へも反映する。
+- Google OAuth 後の既定遷移を要件 `AUTH-03` に合わせ、`profiles.role` が `shop` / `successor` のときは `/shop` / `/successor`、未設定は `/onboarding/role`。`sanitizeReturnTo` で許可された `next` が付いている場合は従来どおりそれを優先。
+- `lib/supabase/proxy.ts`: 保護対象に `/shop`・`/successor` を追加。未ログイン時は `/login?returnTo=…` で元のパスへ戻れるようにした。
+- `app/onboarding/role`・`onboarding/shop`・`onboarding/successor`、および店/継ぎ手プロフィール保存（`features/register/*-actions`）後のリダイレクト先をロール別ホーム（`/shop` / `/successor`）に統一。
+- **`/shop` と `/successor` のコンソール入口を再構成** — 概要とサイドナビを `app/shop/layout.tsx` / `app/successor/layout.tsx` と各 `page.tsx` で提供。機能画面はサイドナビから既存の `/dashboard/*` へ遷移。`/shop/profile`・`/shop/settings`（および successor 側の対応ペア）は `/dashboard/profile`・`/dashboard/settings` へのリダイレクトのみ。
 
 ### Added
 
@@ -47,6 +90,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `package.json` の `dev` スクリプトに `--hostname 0.0.0.0` を追加。LAN経由（スマホ等）でのローカル開発テストを可能にするため
 - Archive のアップロード画面で、対応形式の表示とフロントエンドのファイル選択・検証を MP3 のみに統一
 - `features/guide/utils/vision.ts`: Vision 画像認識を Google Gemini (`gemini-2.0-flash-exp`) から OpenAI (`gpt-4o`) に置き換え。API を OpenAI に統一し、`@google/generative-ai` への依存を解消
   - `@google/generative-ai` パッケージを `package.json` から削除
@@ -93,10 +137,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 - 各機能画面での個別の `max-w-7xl` や余白指定（`PageContainer` への移行に伴い削除）。
+- `app/shop/` と `app/successor/` を完全削除。URL を `/dashboard` に一本化
 
-### Removed
+### Changed
 
-- `app/auth/signup/page.tsx` をプレースホルダーUIから `/login` へのredirectに変更。登録はGoogleOAuth一本のため
+- `lib/supabase/proxy.ts`: `PROTECTED_PREFIXES` を `['/dashboard', '/register', '/onboarding']` に更新（旧 `/shop`, `/successor`）
+- `app/auth/callback/route.ts`: ログイン後リダイレクト先を `/dashboard` に変更（旧ロール別 `/shop` / `/successor`）
+- `app/onboarding/role/page.tsx`, `shop/page.tsx`, `successor/page.tsx`: ロール確定・不一致時のリダイレクト先を `/dashboard` に変更
+- `features/register/shop-actions.ts`, `successor-actions.ts`: 登録完了後のリダイレクト先を `/dashboard` に変更
+
+### Fixed
+
+- `app/dashboard/layout.tsx`: `role ?? undefined` で `UserRole | null` → `'shop' | 'successor' | undefined` 型不一致を解消（`redirect()` 後の TypeScript narrowing 欠如を回避）
+- `app/dashboard/settings/layout.tsx`: `role as 'shop' | 'successor'` で同様の型不一致を解消
+- `app/dashboard/archive/page.tsx`, `archive/[id]/page.tsx`, `agent/page.tsx`: `ensureShopForProfile` 後の `shop` が possibly null の TS18047 エラーを `shop!.id` で解消（各ページで `redirect()` による非 null 保証済み）
 
 - `app/register/` を廃止し `app/onboarding/` に集約。オンボーディングフローを一箇所に統一
   - `app/register/shop/` → `app/onboarding/shop/`

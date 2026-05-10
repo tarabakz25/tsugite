@@ -53,12 +53,14 @@ export async function saveSuccessorProfile(
     bio,
   }
 
-  const { error: updateError } = await supabase
+  const { data: updatedProfile, error: updateError } = await supabase
     .from('profiles')
     .update({ successor_profile })
     .eq('id', user.id)
+    .select('id')
+    .maybeSingle()
 
-  if (updateError) {
+  if (updateError || !updatedProfile) {
     return { error: 'required' }
   }
 

@@ -121,12 +121,12 @@ export default function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
   return (
     <form aria-busy={isUploading} className="flex flex-col gap-4" onSubmit={handleSubmit}>
       {msg ? (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {msg}
         </p>
       ) : null}
       <div className="flex flex-col gap-2">
-        <label htmlFor="video" className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+        <label htmlFor="video" className="text-sm font-semibold text-ink">
           インタビュー音声
         </label>
         <input
@@ -139,16 +139,14 @@ export default function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
             setSelectedFile(e.target.files?.[0] || null)
             setError(undefined)
           }}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900"
+          className="rounded-lg border border-washi-3 bg-white px-3 py-2 text-sm text-ink outline-none ring-washi-3 transition-colors focus:border-shu focus:ring-2"
         />
         {selectedFile && (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-ink-3">
             選択: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)}MB)
           </p>
         )}
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          対応形式: MP3のみ対応（最大100MB）
-        </p>
+        <p className="text-xs text-ink-4">対応形式: MP3のみ対応（最大100MB）</p>
       </div>
       <Button type="submit" disabled={!selectedFile || isUploading} isLoading={isUploading}>
         {isUploading ? 'アップロード中...' : 'アップロード'}

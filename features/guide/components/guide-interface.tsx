@@ -208,13 +208,137 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
     }
   }
 
+  const cameraPanel =
+    scenes.length === 0 ? null : (
+      <div className="relative isolate flex min-h-[42vh] w-full overflow-hidden rounded-2xl border border-washi-3 bg-[#081018] shadow-inner lg:aspect-video lg:min-h-[360px]">
+        <CameraCapture onCapture={handleCapture} captureInterval={2000} isActive={isActive} />
+
+        {(status === 'analyzing' || status === 'speaking') && (
+          <div
+            className="pointer-events-none absolute inset-0 animate-pulse bg-shu/20"
+            aria-hidden
+          />
+        )}
+
+        {feedback && isActive ? (
+          <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/80 to-transparent p-6 pt-28 text-white md:hidden md:bg-none md:p-0">
+            <div className="rounded-xl border border-white/10 bg-black/72 p-5 shadow-lg backdrop-blur-sm">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-white/85">
+                先代視点フィードバック
+              </p>
+              <p className="mt-3 max-h-[9.5rem] overflow-y-auto text-lg font-semibold leading-snug text-white drop-shadow-[0_1px_2px_rgb(0_0_0/0.6)]">
+                {feedback.text}
+              </p>
+              {status === 'analyzing' ? (
+                <p className="mt-2 text-xs text-white/80">AIがシーンとの差を計算しています…</p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        {isActive ? (
+          <div className="pointer-events-none absolute left-6 top-6 z-[5] lg:left-10 lg:top-10">
+            <Badge tone="success" className="shadow-lg shadow-black/30">
+              REC
+            </Badge>
+          </div>
+        ) : null}
+
+        {!isActive && (
+          <div className="pointer-events-none absolute inset-0 hidden items-center justify-center bg-black/45 text-white md:flex lg:hidden">
+            <p className="max-w-[18rem] text-center text-sm font-semibold">
+              「ガイドを開始」を押してカメラを起動します
+            </p>
+          </div>
+        )}
+      </div>
+    )
+
+  const controlPanel =
+    scenes.length === 0 ? null : (
+      <Card className="space-y-5 border border-washi-3 p-6 shadow-none">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-sm font-bold text-ink">シーンと操作</h3>
+          {getStatusBadge()}
+        </div>
+
+        <div className="space-y-5">
+          <div>
+            <label
+              className="mb-2 ml-1 block text-sm font-semibold text-ink-2"
+              htmlFor="guide-scene-select"
+            >
+              シーンを選択
+            </label>
+            <select
+              id="guide-scene-select"
+              value={selectedScene?.id || ''}
+              onChange={(e) => {
+                const scene = scenes.find((s) => s.id === e.target.value)
+                setSelectedScene(scene || null)
+              }}
+              disabled={isActive}
+              className="w-full rounded-xl border border-washi-3 bg-white px-3 py-3 text-base leading-snug text-ink shadow-sm transition focus:border-shu focus:outline-none focus:ring-[3px] focus:ring-shu/35 disabled:bg-washi-3"
+            >
+              {scenes.map((scene) => (
+                <option key={scene.id} value={scene.id}>
+                  {scene.sceneName}
+                  {scene.season ? ` (${scene.season})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {!isActive ? (
+            <Button
+              size="lg"
+              onClick={handleStart}
+              disabled={!selectedScene}
+              className="min-h-[56px] w-full text-[17px]"
+            >
+              ガイドを開始（カメラON）
+            </Button>
+          ) : (
+            <Button
+              variant="danger"
+              size="lg"
+              className="min-h-[56px] w-full text-[17px]"
+              onClick={handleStop}
+            >
+              ガイドを停止
+            </Button>
+          )}
+        </div>
+      </Card>
+    )
+
+  const stepsCard = (
+    <Card className="border border-transparent bg-washi-2/80 p-6 shadow-none">
+      <p className="text-xs font-bold uppercase tracking-[0.24em] text-ink-3">運用ヒント</p>
+      <ol className="mt-4 space-y-3 text-sm leading-relaxed text-ink">
+        <li>
+          <span className="font-semibold text-shu">1.</span>{' '}
+          屋外・明るめの環境での利用をおすすめします。
+        </li>
+        <li>
+          <span className="font-semibold text-shu">2.</span>{' '}
+          音声ガイダンスは自動再生されますが、環境によりミュート状態のときは画面上の文言を読み上げください。
+        </li>
+        <li>
+          <span className="font-semibold text-shu">3.</span>{' '}
+          プライベートな情報が映らないよう、開始前に画角だけ軽く確認してください。
+        </li>
+      </ol>
+    </Card>
+  )
+
   if (scenes.length === 0) {
     return (
       <Card className="p-8 text-center">
         <div className="mx-auto max-w-xl space-y-5">
           <div>
             <h2 className="text-lg font-bold text-ink">参照シーンが登録されていません</h2>
-            <p className="mt-2 text-sm leading-6 text-sumi-600">
+            <p className="mt-2 text-sm leading-6 text-ink-2">
               Archiveの暗黙知タグからGuideシーンを生成してください。生成後にこの画面で選択できます。
             </p>
           </div>
@@ -238,131 +362,49 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
   }
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       <PageHeader
-        title="Guide - AI弟子モード"
-        description="カメラをかざして、先代の所作との差分を確認しましょう"
-        rightContent={getStatusBadge()}
+        title="Guide — リアルタイム練習"
+        description="カメラ越しに、正解との差だけを音声とテキストで返します。"
+        rightContent={<div className="hidden sm:block">{getStatusBadge()}</div>}
       />
 
-      <div className="mb-6">
-        <Card className="bg-warning-bg border-warning/20 p-4">
-          <p className="text-sm text-warning flex items-center gap-2">
-            <span className="text-base">⚠️</span>
-            <span>
-              <strong>デモモード:</strong> 画像はクラウドのVision
-              APIに送信されます。プライバシー保証はありません。
-            </span>
+      <Card className="border border-warning/30 bg-warning-bg p-6 shadow-none">
+        <div className="flex flex-wrap items-start gap-3">
+          <span className="text-lg text-warning leading-none">⚠︎</span>
+          <p className="min-w-[16rem] flex-1 text-sm font-medium leading-relaxed text-ink">
+            <strong className="font-bold">デモ・検証環境:</strong>{' '}
+            送信した画像はクラウドの視覚モデルまで届きます。モザイクの必要な環境では利用しないでください。
           </p>
-        </Card>
+        </div>
+      </Card>
+
+      <div className="mt-8 space-y-6 lg:hidden">{cameraPanel}</div>
+
+      <div className="mt-10 hidden lg:block">
+        <SplitLayout
+          main={
+            <div className="flex flex-col gap-8">
+              {cameraPanel}
+              {stepsCard}
+            </div>
+          }
+          side={
+            <div className="sticky top-[calc(env(safe-area-inset-top)+1.5rem)] space-y-6">
+              {controlPanel}
+              <FeedbackDisplay feedback={feedback} />
+            </div>
+          }
+        />
       </div>
 
-      <SplitLayout
-        main={
-          <div className="space-y-6">
-            <Card className="relative overflow-hidden bg-sumi-900 aspect-video flex items-center justify-center border-none shadow-xl">
-              <CameraCapture onCapture={handleCapture} captureInterval={2000} isActive={isActive} />
-              {isActive && (
-                <div className="absolute top-4 left-4">
-                  <Badge tone="success" className="animate-pulse shadow-md">
-                    REC
-                  </Badge>
-                </div>
-              )}
-            </Card>
-            <FeedbackDisplay feedback={feedback} />
-            {hasProcessingErrors ? (
-              <Card className="border-danger/20 bg-danger-bg/40 p-4">
-                <h3 className="text-sm font-bold text-danger">処理状況</h3>
-                <ul className="mt-2 space-y-1 text-sm text-danger">
-                  {processingErrors.analysis ? <li>{processingErrors.analysis}</li> : null}
-                  {processingErrors.tts ? <li>{processingErrors.tts}</li> : null}
-                  {processingErrors.log ? <li>{processingErrors.log}</li> : null}
-                </ul>
-              </Card>
-            ) : null}
-          </div>
-        }
-        side={
-          <div className="space-y-6">
-            <Card className="p-5">
-              <h3 className="text-sm font-bold text-ink mb-4 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-shu"></span>
-                シーン設定
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-ink-3 mb-1.5 ml-0.5">
-                    シーンを選択
-                  </label>
-                  <select
-                    value={selectedScene?.id || ''}
-                    onChange={(e) => {
-                      const scene = scenes.find((s) => s.id === e.target.value)
-                      setSelectedScene(scene || null)
-                    }}
-                    disabled={isActive}
-                    className="w-full px-3 py-2 bg-washi border border-washi-3 rounded-md text-sm text-ink focus:outline-none focus:ring-2 focus:ring-shu/50 transition-all disabled:opacity-50"
-                  >
-                    {scenes.map((scene) => (
-                      <option key={scene.id} value={scene.id}>
-                        {scene.sceneName}
-                        {scene.season ? ` (${scene.season})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  <Link
-                    className="mt-2 inline-flex text-xs font-semibold text-shu hover:text-shu-2"
-                    href="/shop/guide/scenes"
-                  >
-                    シーン管理
-                  </Link>
-                </div>
-
-                <div className="pt-2">
-                  {!isActive ? (
-                    <Button
-                      onClick={handleStart}
-                      disabled={!selectedScene}
-                      className="w-full py-6 text-base font-bold shadow-lg shadow-shu/10"
-                    >
-                      ガイドを開始
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleStop}
-                      variant="danger"
-                      className="w-full py-6 text-base font-bold shadow-lg shadow-danger/10"
-                    >
-                      ガイドを停止
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-5 bg-washi-2 border-none">
-              <h4 className="text-xs font-bold text-ink-3 uppercase tracking-wider mb-3">
-                ガイドの使いかた
-              </h4>
-              <ul className="text-xs text-ink-2 space-y-2.5">
-                <li className="flex gap-2">
-                  <span className="text-shu">1.</span>
-                  <span>現在の状況に合ったシーンを選択してください。</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-shu">2.</span>
-                  <span>「ガイドを開始」を押すとカメラが起動します。</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-shu">3.</span>
-                  <span>AIがリアルタイムで所作の改善点を音声でお伝えします。</span>
-                </li>
-              </ul>
-            </Card>
-          </div>
-        }
-      />
+      {/* モバイル: サイドコンテンツを縦並び */}
+      <div className="mt-6 space-y-5 lg:hidden">
+        {controlPanel}
+        {/* オーバーレイに加え詳細ログを表示 */}
+        <FeedbackDisplay feedback={feedback} emphasized />
+        {stepsCard}
+      </div>
     </PageContainer>
   )
 }

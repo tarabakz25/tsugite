@@ -1,0 +1,36 @@
+import { redirect } from 'next/navigation'
+
+import Container from '@/components/ui/container'
+import SuccessorProfileForm from '@/features/register/successor-profile-form'
+import { getCurrentProfileState } from '@/lib/get-profile'
+import { parseUserRole } from '@/lib/roles'
+
+export default async function RegisterSuccessorPage() {
+  const { profile, user } = await getCurrentProfileState()
+  if (!user) redirect('/login')
+  if (!profile) redirect('/onboarding/role')
+
+  const role = parseUserRole(profile)
+  if (!role) redirect('/onboarding/role')
+  if (role !== 'successor') redirect(role === 'shop' ? '/shop' : '/onboarding/role')
+
+  const sp = profile.successor_profile
+
+  return (
+    <main className="flex flex-1 flex-col py-12">
+      <Container>
+        <h1 className="text-center text-2xl font-semibold text-ink">継ぎ手プロフィール</h1>
+        <p className="mx-auto mt-3 max-w-lg text-center text-sm text-ink-3">
+          興味分野や自己紹介を入力して、応募やスカウト（将来機能）への下地を作ります。
+        </p>
+        <div className="mt-10">
+          <SuccessorProfileForm
+            defaultDisplayName={sp?.displayName ?? ''}
+            defaultInterests={sp?.interests ?? ''}
+            defaultBio={sp?.bio ?? ''}
+          />
+        </div>
+      </Container>
+    </main>
+  )
+}

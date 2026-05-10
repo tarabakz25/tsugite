@@ -266,7 +266,7 @@ Guide は `reference_scenes.correct_state` を正解状態として利用し、�
 - Tailwind CSS v4。
 - Bun をパッケージマネージャとして使う。
 - Supabase Auth、Postgres、Storage、RLS。
-- Hono を Next.js Route Handler にマウントし、`/api/*` を提供する。
+- `/api/*` は App Router の Route Handler（`app/api/**/route.ts`）で提供する。
 - Drizzle schema を DB 構造の TypeScript 定義として持つ。
 
 ### 9.2 セキュリティ
