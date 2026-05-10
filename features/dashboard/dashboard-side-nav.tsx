@@ -12,9 +12,13 @@ type NavItem = {
   label: string
 }
 
+type AsideMode = 'full' | 'desktop-only'
+
 type DashboardSideNavProps = {
   title: string
   items: NavItem[]
+  /** `desktop-only`: モバイルはボトムナビ等に任せサイドバーを非表示（継ぎ手） */
+  asideMode?: AsideMode
   role?: 'shop' | 'successor'
   profile?: Profile
   email?: string
@@ -23,6 +27,7 @@ type DashboardSideNavProps = {
 export default function DashboardSideNav({
   title,
   items,
+  asideMode = 'full',
   role,
   profile,
   email,
@@ -30,34 +35,47 @@ export default function DashboardSideNav({
   const pathname = usePathname()
 
   const titleColor =
-    role === 'shop' ? 'text-shu' : role === 'successor' ? 'text-ink-3' : 'text-zinc-400'
+    role === 'shop' ? 'text-shu' : role === 'successor' ? 'text-ink-2' : 'text-ink-4'
 
   const activeClass =
     role === 'shop'
-      ? 'bg-shu-3 font-medium text-shu'
+      ? 'bg-shu-3 font-semibold text-shu ring-1 ring-shu/15'
       : role === 'successor'
-        ? 'bg-washi-2 font-medium text-ink-3'
-        : 'bg-zinc-100 font-medium text-zinc-900 dark:bg-zinc-900 dark:text-zinc-50'
+        ? 'bg-white font-semibold text-ink shadow-sm ring-1 ring-washi-3'
+        : 'bg-white font-semibold text-ink shadow-sm ring-1 ring-washi-3'
+
+  const asideResponsive =
+    asideMode === 'desktop-only'
+      ? 'hidden md:flex md:w-64 md:shrink-0 md:flex-col md:border-b-0 md:border-r md:shadow-none'
+      : 'flex w-full shrink-0 flex-col md:sticky md:top-0 md:h-[min(100svh,100dvh)] md:w-64'
 
   return (
-    <aside className="flex w-full shrink-0 flex-col border-b border-zinc-200 bg-white md:sticky md:top-0 md:h-screen md:w-64 md:border-b-0 md:border-r dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          <div className={`text-xs font-medium uppercase tracking-wider ${titleColor}`}>
+    <aside
+      className={`${asideResponsive} border-b border-washi-3 bg-white shadow-[0_1px_0_rgb(221_226_220_/_0.9)] md:border-washi-3 md:bg-surface`}
+    >
+      <div className="flex flex-1 flex-col overflow-hidden md:overflow-y-auto">
+        <div className="px-5 pb-4 pt-6 md:px-6">
+          <div className={`text-xs font-semibold uppercase tracking-[0.2em] ${titleColor}`}>
             {title}
           </div>
         </div>
-        <nav className="flex flex-row gap-1 overflow-x-auto px-4 pb-4 md:flex-col md:px-2 md:pb-8">
+        <nav
+          aria-label="コンソール内メニュー"
+          className={
+            asideMode === 'desktop-only'
+              ? 'flex flex-col gap-1 px-2 pb-8'
+              : 'flex flex-row gap-1 overflow-x-auto px-3 pb-4 md:flex-col md:px-2 md:pb-8'
+          }
+        >
           {items.map(({ href, label }) => {
-            const active = pathname === href
+            const active =
+              pathname === href || (href !== '/' && href.length > 1 && pathname.startsWith(href))
             return (
               <Link
                 key={href}
                 href={href}
-                className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm md:whitespace-normal ${
-                  active
-                    ? activeClass
-                    : 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-900/70'
+                className={`whitespace-nowrap rounded-lg px-3 py-2.5 text-sm leading-snug transition-colors md:min-h-[44px] md:py-3 md:whitespace-normal ${
+                  active ? activeClass : 'text-ink-2 hover:bg-washi hover:text-ink'
                 }`}
               >
                 {label}
@@ -67,7 +85,15 @@ export default function DashboardSideNav({
         </nav>
       </div>
 
-      {profile && <DashboardUserNav profile={profile} email={email} />}
+      {asideMode === 'desktop-only' ? (
+        profile ? (
+          <div className="hidden md:block">
+            <DashboardUserNav profile={profile} email={email} />
+          </div>
+        ) : null
+      ) : profile ? (
+        <DashboardUserNav profile={profile} email={email} />
+      ) : null}
     </aside>
   )
 }

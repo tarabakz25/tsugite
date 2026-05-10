@@ -1,4 +1,4 @@
-import AppShell from '@/components/ui/app-shell'
+import PageContainer from '@/components/layout/page-container'
 import Badge from '@/components/ui/badge'
 import Button from '@/components/ui/button'
 import Card from '@/components/ui/card'
@@ -31,7 +31,7 @@ const taskTemplates = [
 
 export default function DesignSystemCatalog() {
   return (
-    <AppShell>
+    <PageContainer>
       <section className="grid gap-5" id="top">
         <div className="grid gap-3">
           <Badge tone="shu">Issue #1 UI Catalog</Badge>
@@ -273,7 +273,7 @@ export default function DesignSystemCatalog() {
           </Sheet>
         </div>
       </section>
-    </AppShell>
+    </PageContainer>
   )
 }
 

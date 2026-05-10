@@ -40,31 +40,29 @@ export default function DashboardUserNav({ profile, email }: DashboardUserNavPro
   const profileHref = profile.role === 'shop' ? '/shop/profile' : '/successor/profile'
 
   return (
-    <div className="relative border-t border-zinc-200 p-4 dark:border-zinc-800" ref={menuRef}>
+    <div className="relative border-t border-washi-3 p-4" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center gap-3 rounded-lg p-2 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900 group"
+        className="group flex w-full items-center gap-3 rounded-lg p-2 transition-colors hover:bg-washi"
       >
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-700 group-hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:group-hover:bg-zinc-700">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-washi-2 text-ink-2 group-hover:bg-washi-3">
           <span className="text-sm font-medium">{initial}</span>
         </div>
         <div className="flex flex-1 flex-col items-start overflow-hidden text-left">
-          <span className="w-full truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="w-full truncate text-sm font-semibold text-ink">
             {profile.display_name || 'ユーザー'}
           </span>
-          <span className="w-full truncate text-xs text-zinc-500 dark:text-zinc-400">
-            {email || 'No email'}
-          </span>
+          <span className="w-full truncate text-xs text-ink-3">{email || 'メール未取得'}</span>
         </div>
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-4 right-4 z-50 mb-2 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg animate-in fade-in slide-in-from-bottom-2 dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="animate-in fade-in slide-in-from-bottom-2 absolute bottom-full left-4 right-4 z-50 mb-2 overflow-hidden rounded-xl border border-washi-3 bg-white shadow-lg">
           <div className="p-1">
             <Link
               href={profileHref}
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-washi"
             >
               <User className="size-4" />
               プロフィール
@@ -72,15 +70,15 @@ export default function DashboardUserNav({ profile, email }: DashboardUserNavPro
             <Link
               href={settingsHref}
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-washi"
             >
               <Settings className="size-4" />
               設定
             </Link>
-            <hr className="my-1 border-zinc-200 dark:border-zinc-800" />
+            <hr className="my-1 border-washi-2" />
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-danger hover:bg-danger-bg"
             >
               <LogOut className="size-4" />
               ログアウト

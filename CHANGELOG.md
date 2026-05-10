@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **UI/UX（フルリニューアル一式）**: プラットフォーム領域を `app/(platform)/layout.tsx` に収め、マーケティング（`SiteHeader` / `SiteFooter`）とは背景・視線の流れを分離。`/dashboard` はロールに応じて `/shop` または `/successor` へリダイレクトし、コンソールのホームを一本化。
+- **デザイントークン**: `globals.css` の `--ink-3` / `--ink-4` を読みやすさ向けに調整し、`body` の既定フォントサイズをやや拡大（本文可読性・店主層前提）。
+- **店主コンソール**: `dashboard-side-nav` / `shop/layout` でラベルを「やること」寄りに再編。`shop/page.tsx` をタスク導線＋KPI の2カラムに刷新。
+- **継ぎ手コンソール**: モバイルでサイドナビを非表示（`asideMode="desktop-only"`）し、`successor-mobile-nav.tsx` のボトムナビと「その他」シート（プロフィール・設定）を追加。
+- **Guide**: `guide-interface.tsx` でモバイルはカメラ主体＋下端オーバーレイ、`feedback-display.tsx` でデザイントークンに統合（未定義の `sumi` クラス除去）。`/dashboard/guide` から別デザインの `AppShell` を外し、継ぎ手専用ルートのみに整理。店主アクセス時は `/shop` へリダイレクト。
+- **Agent**: メッセージと引用ブロックを縦並びに修正、`Web Speech API` による音声入力ボタン、送信まわりのタッチターゲットと余白・コントラストを調整（`features/agent/components/agent-chat.tsx`）。
+- **Design System**: `DESIGN.md` を作成し、デザインシステムとUI実装の入口・検証導線を整備。詳細は `design/components.md` および `design/patterns.md` に分離。
+
 - **API**: Hono のキャッチオール（`app/api/[[...route]]`）をやめ、Next.js App Router の標準 Route Handler に分割。URL（`/api/health`、`/api/agent/*`、`/api/guide/*`、`/api/archive/*`）は互換維持。`maxDuration = 300` は文字起こし・抽出など長時間処理が必要な archive 系のみに限定。共通処理は `lib/api/http.ts`（JSON バリデーション・エラー応答）、`lib/api/auth.ts`、`lib/api/agent-access.ts` に集約。依存から `hono` と `@hono/zod-validator` を削除。
 - ミドルウェア（`lib/supabase/proxy.ts` の `updateSession`）: Supabase セッションがある場合、`/` と `/login` へのアクセスは `/dashboard` へリダイレクト。`/login` で `returnTo` または `next` が `sanitizeReturnTo` で有効かつ `/` でない場合はそのパスへ遷移（ログイン画面のスキップ時もディープリンク尊重）。`/login` 自身への returnTo は無限ループ防止のため無視。
 

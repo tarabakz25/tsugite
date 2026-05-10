@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 
-import AppShell from '@/components/ui/app-shell'
 import Tabs from '@/components/ui/tabs'
 import PageContainer from '@/components/layout/page-container'
 import PageHeader from '@/components/layout/page-header'
@@ -61,57 +60,55 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
   }
 
   return (
-    <AppShell>
-      <PageContainer>
-        <PageHeader
-          title="Archive - 暗黙知の蓄積"
-          description="インタビュー動画・音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。"
-        />
+    <PageContainer>
+      <PageHeader
+        title="Archive — 暗黙知の蓄積"
+        description="インタビュー動画・音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。"
+      />
 
-        <Tabs
-          activeValue={activeTab}
-          className="w-full"
-          items={[
-            {
-              content: (
-                <div className="max-w-2xl">
-                  <h2 className="mb-4 text-xl font-semibold text-ink">
-                    新しいインタビュー動画・音声をアップロード
-                  </h2>
-                  <VideoUploadForm onSuccess={() => window.location.reload()} />
-                </div>
-              ),
-              label: 'アップロード',
-              value: 'upload',
-            },
-            {
-              content: (
-                <>
-                  <h2 className="mb-4 text-xl font-semibold text-ink">
-                    インタビュー一覧 ({interviews.length}件)
-                  </h2>
-                  <InterviewsList interviews={interviews} onProcess={handleProcess} />
-                </>
-              ),
-              label: 'インタビュー一覧',
-              value: 'interviews',
-            },
-            {
-              content: (
-                <>
-                  <h2 className="mb-4 text-xl font-semibold text-ink">
-                    暗黙知タグ ({tags.length}件)
-                  </h2>
-                  <TacitTagsList tags={tags} />
-                </>
-              ),
-              label: '暗黙知タグ',
-              value: 'tags',
-            },
-          ]}
-          onValueChange={setActiveTab}
-        />
-      </PageContainer>
-    </AppShell>
+      <Tabs
+        activeValue={activeTab}
+        className="w-full"
+        items={[
+          {
+            content: (
+              <div className="max-w-2xl">
+                <h2 className="mb-4 text-xl font-semibold text-ink">
+                  新しいインタビュー動画・音声をアップロード
+                </h2>
+                <VideoUploadForm onSuccess={() => window.location.reload()} />
+              </div>
+            ),
+            label: 'アップロード',
+            value: 'upload',
+          },
+          {
+            content: (
+              <>
+                <h2 className="mb-4 text-xl font-semibold text-ink">
+                  インタビュー一覧 ({interviews.length}件)
+                </h2>
+                <InterviewsList interviews={interviews} onProcess={handleProcess} />
+              </>
+            ),
+            label: 'インタビュー一覧',
+            value: 'interviews',
+          },
+          {
+            content: (
+              <>
+                <h2 className="mb-4 text-xl font-semibold text-ink">
+                  暗黙知タグ ({tags.length}件)
+                </h2>
+                <TacitTagsList tags={tags} />
+              </>
+            ),
+            label: '暗黙知タグ',
+            value: 'tags',
+          },
+        ]}
+        onValueChange={setActiveTab}
+      />
+    </PageContainer>
   )
 }

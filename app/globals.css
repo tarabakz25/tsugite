@@ -5,9 +5,10 @@
   --washi-2: #dde2dc;
   --washi-3: #b8c4be;
   --ink: #142028;
-  --ink-2: #1f3a4a;
-  --ink-3: #3a5a70;
-  --ink-4: #6b8595;
+  --ink-2: #243844;
+  /* サーフェス上の二次テキスト（WCAG コントラスト改善） */
+  --ink-3: #294352;
+  --ink-4: #47606e;
   --shu: #8a3a2a;
   --shu-2: #b9503b;
   --shu-3: #f0d8d0;
@@ -67,6 +68,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  /* プラットフォーム利用（中高年読者）前提で本文をワンサイズアップ */
+  font-size: 1.0625rem;
+  line-height: 1.65;
   min-width: 320px;
 }
 
