@@ -4,6 +4,9 @@ import { useState, useCallback } from 'react'
 import Button from '@/components/ui/button'
 import Card from '@/components/ui/card'
 import Badge from '@/components/ui/badge'
+import PageContainer from '@/components/layout/page-container'
+import PageHeader from '@/components/layout/page-header'
+import SplitLayout from '@/components/layout/split-layout'
 import CameraCapture from './camera-capture'
 import FeedbackDisplay from './feedback-display'
 import type { GuideFeedback, GuideStatus, SceneState } from '../types'
@@ -153,68 +156,115 @@ export default function GuideInterface({ shopId, scenes }: GuideInterfaceProps) 
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-sumi-900">Guide - AI弟子モード</h2>
-          <p className="text-sm text-sumi-600 mt-1">
-            カメラをかざして、先代の所作との差分を確認しましょう
+    <PageContainer>
+      <PageHeader
+        title="Guide - AI弟子モード"
+        description="カメラをかざして、先代の所作との差分を確認しましょう"
+        rightContent={getStatusBadge()}
+      />
+
+      <div className="mb-6">
+        <Card className="bg-warning-bg border-warning/20 p-4">
+          <p className="text-sm text-warning flex items-center gap-2">
+            <span className="text-base">⚠️</span>
+            <span>
+              <strong>デモモード:</strong> 画像はクラウドのVision
+              APIに送信されます。プライバシー保証はありません。
+            </span>
           </p>
-        </div>
-        {getStatusBadge()}
+        </Card>
       </div>
 
-      {/* Privacy Notice */}
-      <Card className="bg-yellow-50 border-yellow-200 p-4">
-        <p className="text-sm text-yellow-900">
-          ⚠️
-          <strong>デモモード:</strong> 画像はクラウドのVision
-          APIに送信されます。プライバシー保証はありません。
-        </p>
-      </Card>
+      <SplitLayout
+        main={
+          <div className="space-y-6">
+            <Card className="relative overflow-hidden bg-sumi-900 aspect-video flex items-center justify-center border-none shadow-xl">
+              <CameraCapture onCapture={handleCapture} captureInterval={2000} isActive={isActive} />
+              {isActive && (
+                <div className="absolute top-4 left-4">
+                  <Badge tone="success" className="animate-pulse shadow-md">
+                    REC
+                  </Badge>
+                </div>
+              )}
+            </Card>
+            <FeedbackDisplay feedback={feedback} />
+          </div>
+        }
+        side={
+          <div className="space-y-6">
+            <Card className="p-5">
+              <h3 className="text-sm font-bold text-ink mb-4 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-shu"></span>
+                シーン設定
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-ink-3 mb-1.5 ml-0.5">
+                    シーンを選択
+                  </label>
+                  <select
+                    value={selectedScene?.id || ''}
+                    onChange={(e) => {
+                      const scene = scenes.find((s) => s.id === e.target.value)
+                      setSelectedScene(scene || null)
+                    }}
+                    disabled={isActive}
+                    className="w-full px-3 py-2 bg-washi border border-washi-3 rounded-md text-sm text-ink focus:outline-none focus:ring-2 focus:ring-shu/50 transition-all disabled:opacity-50"
+                  >
+                    {scenes.map((scene) => (
+                      <option key={scene.id} value={scene.id}>
+                        {scene.sceneName}
+                        {scene.season ? ` (${scene.season})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-      {/* Scene Selection */}
-      <Card className="p-4">
-        <label className="block text-sm font-medium text-sumi-700 mb-2">シーンを選択</label>
-        <select
-          value={selectedScene?.id || ''}
-          onChange={(e) => {
-            const scene = scenes.find((s) => s.id === e.target.value)
-            setSelectedScene(scene || null)
-          }}
-          disabled={isActive}
-          className="w-full px-3 py-2 border border-sumi-300 rounded-md focus:outline-none focus:ring-2 focus:ring-aka-500"
-        >
-          {scenes.map((scene) => (
-            <option key={scene.id} value={scene.id}>
-              {scene.sceneName}
-              {scene.season ? ` (${scene.season})` : ''}
-            </option>
-          ))}
-        </select>
-      </Card>
+                <div className="pt-2">
+                  {!isActive ? (
+                    <Button
+                      onClick={handleStart}
+                      disabled={!selectedScene}
+                      className="w-full py-6 text-base font-bold shadow-lg shadow-shu/10"
+                    >
+                      ガイドを開始
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleStop}
+                      variant="danger"
+                      className="w-full py-6 text-base font-bold shadow-lg shadow-danger/10"
+                    >
+                      ガイドを停止
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
 
-      {/* Camera View */}
-      <Card className="p-4">
-        <CameraCapture onCapture={handleCapture} captureInterval={2000} isActive={isActive} />
-      </Card>
-
-      {/* Control Buttons */}
-      <div className="flex gap-4">
-        {!isActive ? (
-          <Button onClick={handleStart} disabled={!selectedScene} className="flex-1">
-            ガイドを開始
-          </Button>
-        ) : (
-          <Button onClick={handleStop} variant="danger" className="flex-1">
-            停止
-          </Button>
-        )}
-      </div>
-
-      {/* Feedback Display */}
-      <FeedbackDisplay feedback={feedback} />
-    </div>
+            <Card className="p-5 bg-washi-2 border-none">
+              <h4 className="text-xs font-bold text-ink-3 uppercase tracking-wider mb-3">
+                ガイドの使いかた
+              </h4>
+              <ul className="text-xs text-ink-2 space-y-2.5">
+                <li className="flex gap-2">
+                  <span className="text-shu">1.</span>
+                  <span>現在の状況に合ったシーンを選択してください。</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-shu">2.</span>
+                  <span>「ガイドを開始」を押すとカメラが起動します。</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-shu">3.</span>
+                  <span>AIがリアルタイムで所作の改善点を音声でお伝えします。</span>
+                </li>
+              </ul>
+            </Card>
+          </div>
+        }
+      />
+    </PageContainer>
   )
 }

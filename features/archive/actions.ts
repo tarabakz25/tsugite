@@ -156,3 +156,105 @@ export async function completeInterviewUpload(
 
   return { interviewId: interview.id }
 }
+
+export type DeleteInterviewResult =
+  | { ok: true }
+  | { ok: false; error: 'not_authenticated' | 'no_shop' | 'not_found' | 'db_error' }
+
+export type DeleteTacitTagResult =
+  | { ok: true }
+  | { ok: false; error: 'not_authenticated' | 'no_shop' | 'not_found' | 'db_error' }
+
+export async function deleteInterview(interviewId: string): Promise<DeleteInterviewResult> {
+  if (!UUID_PATTERN.test(interviewId)) {
+    return { ok: false, error: 'not_found' }
+  }
+
+  const { error, shop, supabase } = await getCurrentShop()
+  if (error === 'not_authenticated') {
+    return { ok: false, error: 'not_authenticated' }
+  }
+  if (error === 'no_shop' || !shop) {
+    return { ok: false, error: 'no_shop' }
+  }
+
+  const { data: row, error: selectError } = await supabase
+    .from('interviews')
+    .select('id, storage_path')
+    .eq('id', interviewId)
+    .eq('shop_id', shop.id)
+    .maybeSingle()
+
+  if (selectError || !row) {
+    return { ok: false, error: 'not_found' }
+  }
+
+  const { error: storageError } = await supabase.storage
+    .from(INTERVIEW_STORAGE_BUCKET)
+    .remove([row.storage_path])
+
+  if (storageError) {
+    console.error('deleteInterview: storage remove failed', storageError)
+  }
+
+  const { error: deleteError } = await supabase
+    .from('interviews')
+    .delete()
+    .eq('id', interviewId)
+    .eq('shop_id', shop.id)
+
+  if (deleteError) {
+    console.error('deleteInterview: db delete failed', deleteError)
+    return { ok: false, error: 'db_error' }
+  }
+
+  return { ok: true }
+}
+
+export async function deleteTacitTag(tagId: string): Promise<DeleteTacitTagResult> {
+  if (!UUID_PATTERN.test(tagId)) {
+    return { ok: false, error: 'not_found' }
+  }
+
+  const { error, shop, supabase } = await getCurrentShop()
+  if (error === 'not_authenticated') {
+    return { ok: false, error: 'not_authenticated' }
+  }
+  if (error === 'no_shop' || !shop) {
+    return { ok: false, error: 'no_shop' }
+  }
+
+  const { data: tagRow, error: selectError } = await supabase
+    .from('tacit_tags')
+    .select('id')
+    .eq('id', tagId)
+    .eq('shop_id', shop.id)
+    .maybeSingle()
+
+  if (selectError || !tagRow) {
+    return { ok: false, error: 'not_found' }
+  }
+
+  const { error: embedDeleteError } = await supabase
+    .from('tag_embeddings')
+    .delete()
+    .eq('tag_id', tagId)
+
+  if (embedDeleteError) {
+    console.error('deleteTacitTag: tag_embeddings delete failed', embedDeleteError)
+    return { ok: false, error: 'db_error' }
+  }
+
+  const { error: deleteError } = await supabase
+    .from('tacit_tags')
+    .delete()
+    .eq('id', tagId)
+    .eq('shop_id', shop.id)
+
+  if (deleteError) {
+    console.error('deleteTacitTag: tacit_tags delete failed', deleteError)
+    return { ok: false, error: 'db_error' }
+  }
+
+  return { ok: true }
+}

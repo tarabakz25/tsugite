@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { openai } from '@/lib/openai'
 import { getStorageFileName } from '@/features/archive/utils/media'
+import { buildTagEmbeddingText } from '@/lib/agent/rag'
 
 const archive = new Hono()
 
@@ -239,8 +240,7 @@ archive.post('/embed/:tagId', async (c) => {
   }
 
   try {
-    // Create combined text for embedding
-    const text = `状況: ${tag.situation}\n判断: ${tag.judgment}\n理由: ${tag.reason}`
+    const text = buildTagEmbeddingText(tag)
 
     // Generate embedding
     const embeddingResponse = await openai.embeddings.create({

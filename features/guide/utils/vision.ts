@@ -1,6 +1,8 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import OpenAI from 'openai'
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '')
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || 'missing-openai-api-key',
+})
 
 export type AnalyzeSceneRequest = {
   imageDataUrl: string
@@ -24,11 +26,6 @@ export async function analyzeSceneWithVision(
   sceneName: string,
 ): Promise<{ items: string[]; rawDescription: string }> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
-
-    // Remove data URL prefix
-    const base64Image = imageDataUrl.replace(/^data:image\/\w+;base64,/, '')
-
     const prompt = `この画像を分析し、見える物品や状態を日本語でリスト化してください。
 シーン: ${sceneName}
 
@@ -40,18 +37,29 @@ export async function analyzeSceneWithVision(
 
 簡潔に、視覚的に確認できる主要な物品のみをリストしてください。`
 
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          mimeType: 'image/jpeg',
-          data: base64Image,
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: {
+                url: imageDataUrl,
+              },
+            },
+            {
+              type: 'text',
+              text: prompt,
+            },
+          ],
         },
-      },
-      { text: prompt },
-    ])
+      ],
+      max_tokens: 500,
+    })
 
-    const response = result.response
-    const text = response.text()
+    const text = response.choices[0]?.message?.content || ''
 
     // Parse items from response
     const items = text

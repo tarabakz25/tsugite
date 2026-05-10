@@ -1,15 +1,55 @@
 'use client'
 
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import Card from '@/components/ui/card'
 import Badge from '@/components/ui/badge'
+import Button from '@/components/ui/button'
 
 import type { TacitTag } from '@/features/archive/types'
+import { deleteTacitTag } from '@/features/archive/actions'
 
 type TacitTagsListProps = {
   tags: TacitTag[]
 }
 
+const DELETE_TACIT_TAG_MESSAGES: Record<
+  Exclude<Awaited<ReturnType<typeof deleteTacitTag>>, { ok: true }>['error'],
+  string
+> = {
+  not_authenticated: 'ログイン情報が無効です。再度ログインしてください。',
+  no_shop: '店舗情報が見つかりません。',
+  not_found: 'この暗黙知タグは見つからないか、すでに削除されています。',
+  db_error: '削除に失敗しました。時間をおいて再度お試しください。',
+}
+
 export default function TacitTagsList({ tags }: TacitTagsListProps) {
+  const router = useRouter()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [, startDeleteTransition] = useTransition()
+
+  const handleDeleteTag = (tagId: string) => {
+    const confirmed = window.confirm(
+      'この暗黙知タグを削除しますか？RAG の参照対象からも除かれます。',
+    )
+    if (!confirmed) {
+      return
+    }
+
+    startDeleteTransition(() => {
+      void (async () => {
+        setDeletingId(tagId)
+        const result = await deleteTacitTag(tagId)
+        setDeletingId(null)
+        if (result.ok) {
+          router.refresh()
+          return
+        }
+        alert(DELETE_TACIT_TAG_MESSAGES[result.error])
+      })()
+    })
+  }
+
   if (tags.length === 0) {
     return (
       <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
@@ -44,10 +84,19 @@ export default function TacitTagsList({ tags }: TacitTagsListProps) {
             </div>
           </div>
 
-          <div className="mt-auto pt-2 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="mt-auto pt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-2">
             <p className="text-xs text-zinc-400 dark:text-zinc-500">
               {new Date(tag.createdAt).toLocaleDateString('ja-JP')}
             </p>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => handleDeleteTag(tag.id)}
+              disabled={deletingId === tag.id}
+              isLoading={deletingId === tag.id}
+            >
+              削除
+            </Button>
           </div>
         </Card>
       ))}

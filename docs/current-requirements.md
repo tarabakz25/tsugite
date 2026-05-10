@@ -156,19 +156,20 @@ TSUGITE は、伝統工芸、旅館、老舗飲食などで言語化されにく
 
 ### 5.9 Agent
 
-| ID     | 要件                                                                                                | 現状     |
-| ------ | --------------------------------------------------------------------------------------------------- | -------- |
-| AGT-01 | `/api/agent/chat` は AI SDK の UI messages と `shopId` を受け取り、最新ユーザー発話を処理する。     | 実装済み |
-| AGT-02 | Agent はユーザー質問を `text-embedding-3-small` で Embedding 化する。                               | 実装済み |
-| AGT-03 | pgvector で同一 `shopId` の類似 `tacit_tags` 上位5件を検索する。                                    | 実装済み |
-| AGT-04 | 関連タグに紐づく transcript ありの `interviews` を最大3件取得する。                                 | 実装済み |
-| AGT-05 | 取得したタグとインタビューを根拠に、GPT-4o が先代女将の口調でストリーミング回答する。               | 実装済み |
-| AGT-06 | API は参照タグを `X-Citations` ヘッダーに JSON で返す。                                             | 実装済み |
-| AGT-07 | `/api/agent/tts` は回答テキストを OpenAI TTS `tts-1`, voice `nova` で音声化する。                   | 実装済み |
-| AGT-08 | `/successor/agent` のチャット UI はサンプル質問、送信、ストリーミング表示、回答音声再生を提供する。 | 部分実装 |
-| AGT-09 | `/successor/agent` の出典表示 UI はあるが、現状は `X-Citations` を state に反映していない。         | 部分実装 |
-| AGT-10 | `/app/agent` は RAG API ではなく、取得済みタグからローカルにデモ回答を組み立てる。                  | モック   |
-| AGT-11 | 会話履歴は永続化しない。                                                                            | 未実装   |
+| ID     | 要件                                                                                                                              | 現状     |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| AGT-01 | `/api/agent/chat` は AI SDK の UI messages と `shopId` を受け取り、最新ユーザー発話を処理する。                                   | 実装済み |
+| AGT-02 | Agent はユーザー質問を `text-embedding-3-small` で Embedding 化する。                                                             | 実装済み |
+| AGT-03 | Supabase RPC `match_tacit_tags_for_agent` 経由で pgvector 類似検索を実行し、同一 `shopId` の類似 `tacit_tags` 上位5件を検索する。 | 実装済み |
+| AGT-04 | 関連タグに紐づく transcript ありの `interviews` を最大3件取得する。                                                               | 実装済み |
+| AGT-05 | 取得したタグとインタビューを根拠に、GPT-4o が先代店主の口調でストリーミング回答する。                                             | 実装済み |
+| AGT-06 | API は参照タグを AI SDK の `data-citations` part としてストリームし、回答本文と同じ assistant message に紐づける。                | 実装済み |
+| AGT-07 | `/api/agent/tts` は回答テキストを OpenAI TTS `tts-1`, voice `nova` で音声化する。                                                 | 実装済み |
+| AGT-08 | `/successor/agent` のチャット UI はサンプル質問、送信、ストリーミング表示、回答音声再生を提供する。                               | 実装済み |
+| AGT-09 | Agent UI は `data-citations` を読み取り、参照した暗黙知タグを回答ごとに表示する。                                                 | 実装済み |
+| AGT-10 | `/app/agent` は RAG API ではなく、取得済みタグからローカルにデモ回答を組み立てる。                                                | モック   |
+| AGT-11 | 会話履歴は永続化しない。                                                                                                          | 未実装   |
+| AGT-12 | 類似検索対象の embedding が足りない場合は、同一 shop の最近の暗黙知タグを補助コンテキストとして渡す。                             | 実装済み |
 
 ## 6. データ要件
 
@@ -188,26 +189,27 @@ TSUGITE は、伝統工芸、旅館、老舗飲食などで言語化されにく
 - `profiles` は本人のみ select/update できる。
 - `shops` は `owner_profile_id = auth.uid()` のユーザーのみ select/insert/update できる。
 - `interviews`, `tacit_tags`, `tag_embeddings`, `reference_scenes`, `observation_logs` は、所有 shop の owner のみ all 操作できる。
+- Agent API は `shops.owner_profile_id = auth.uid()` または `profiles.organization_ids` に shopId が含まれるユーザーのみ RAG 参照できる（継ぎ手の正式な店舗紐づけテーブルができるまでの暫定アクセスリスト）。
 - `interview-videos` bucket は、Storage object の第一階層 folder が shopId と一致し、その shop owner である場合のみ upload/read/delete できる。
 
 ### 6.2 データ依存関係
 
-Archive で作った `interviews` と `tacit_tags` が Agent の根拠になる。`tag_embeddings` がないタグは pgvector 検索対象にならない。
+Archive で作った `interviews` と `tacit_tags` が Agent の根拠になる。`tag_embeddings` がないタグは pgvector 検索対象にならないが、Agent は最近の `tacit_tags` を補助コンテキストとして利用する。
 
 Guide は `reference_scenes.correct_state` を正解状態として利用し、実行結果を `observation_logs` に保存する。`reference_scenes.source_tag_id` は Archive タグ由来の正解シーンを表現できるが、現状 UI では作成導線が未完成である。
 
 ## 7. API 要件
 
-| Method | Path                                   | 目的                                     | 認証・認可の現状                             |
-| ------ | -------------------------------------- | ---------------------------------------- | -------------------------------------------- |
-| GET    | `/api/health`                          | ヘルスチェック                           | 認証なし                                     |
-| POST   | `/api/archive/transcribe/:interviewId` | media を文字起こしし、transcript 保存    | Supabase user 必須、interview owner 確認あり |
-| POST   | `/api/archive/extract/:interviewId`    | transcript から暗黙知タグ抽出            | Supabase user 必須、interview owner 確認あり |
-| POST   | `/api/archive/embed/:tagId`            | tag の Embedding 作成                    | Supabase user 必須、tag owner 確認あり       |
-| POST   | `/api/guide/analyze`                   | 画像解析、正解状態との差分、LLM feedback | API 内の認証チェックなし                     |
-| POST   | `/api/guide/tts`                       | Guide feedback の TTS                    | API 内の認証チェックなし                     |
-| POST   | `/api/agent/chat`                      | RAG チャットのストリーミング回答         | API 内の Supabase 認証・shop owner 確認なし  |
-| POST   | `/api/agent/tts`                       | Agent 回答の TTS                         | API 内の認証チェックなし                     |
+| Method | Path                                   | 目的                                     | 認証・認可の現状                                                                                                          |
+| ------ | -------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/health`                          | ヘルスチェック                           | 認証なし                                                                                                                  |
+| POST   | `/api/archive/transcribe/:interviewId` | media を文字起こしし、transcript 保存    | Supabase user 必須、interview owner 確認あり                                                                              |
+| POST   | `/api/archive/extract/:interviewId`    | transcript から暗黙知タグ抽出            | Supabase user 必須、interview owner 確認あり                                                                              |
+| POST   | `/api/archive/embed/:tagId`            | tag の Embedding 作成                    | Supabase user 必須、tag owner 確認あり                                                                                    |
+| POST   | `/api/guide/analyze`                   | 画像解析、正解状態との差分、LLM feedback | API 内の認証チェックなし                                                                                                  |
+| POST   | `/api/guide/tts`                       | Guide feedback の TTS                    | API 内の認証チェックなし                                                                                                  |
+| POST   | `/api/agent/chat`                      | RAG チャットのストリーミング回答         | Supabase user 必須、shop owner または `profiles.organization_ids` によるアクセス確認あり。DB参照は Supabase HTTP/RPC 経由 |
+| POST   | `/api/agent/tts`                       | Agent 回答の TTS                         | Supabase user 必須                                                                                                        |
 
 ## 8. ルート要件
 
@@ -289,14 +291,14 @@ Guide は `reference_scenes.correct_state` を正解状態として利用し、�
 - `APP_ORIGIN`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `DATABASE_URL`
+- `DATABASE_URL`（Drizzle migration / db:studio 用。Agent の実行時参照は Supabase HTTP/RPC 経由）
 - `OPENAI_API_KEY`
 - `GOOGLE_GENERATIVE_AI_API_KEY`
 
 ## 10. 現状の主な未決事項
 
 - 公開募集、店の募集管理、応募管理を実データ化するスキーマが未定。
-- 継ぎ手と shop の正式な関係モデルが未定。現状 Agent は固定 shopId を使う箇所がある。
+- 継ぎ手と shop の正式な関係モデルが未定。現状 Agent は暫定的に `profiles.organization_ids` を参照する。
 - `/app/*` をデモ公開のままにするか、ログイン必須にするか未定。
 - Agent API、Guide API の認証・認可が API 内で完結していない。
 - Guide の正解シーン登録と source tag 連携の UI が未完成。

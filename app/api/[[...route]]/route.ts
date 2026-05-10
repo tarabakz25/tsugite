@@ -1,19 +1,21 @@
 import { Hono } from 'hono'
 import { handle } from 'hono/vercel'
-import { convertToModelMessages, streamText, type UIMessage } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  streamText,
+  type UIMessage,
+} from 'ai'
+import { openai as aiOpenAI } from '@ai-sdk/openai'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
-import postgres from 'postgres'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import { analyzeSceneWithVision, compareWithCorrectState } from '@/features/guide/utils/vision'
 import { generateGuideFeedback } from '@/features/guide/utils/llm'
 import { generateSpeech } from '@/features/guide/utils/tts'
-import {
-  generateEmbedding,
-  searchSimilarTags,
-  getRelatedInterviews,
-  buildRAGPrompt,
-} from '@/lib/agent/rag'
+import { buildRAGPrompt, getRAGContext } from '@/lib/agent/rag'
 import type { ChatCitation } from '@/types/agent'
 
 import archive from './archive'
@@ -29,6 +31,64 @@ app.get('/health', (c) => {
 
 app.route('/archive', archive)
 
+type AgentChatMessage = UIMessage<unknown, { citations: ChatCitation[] }>
+
+function getMessageText(message: UIMessage | undefined): string {
+  return (
+    message?.parts
+      ?.filter((part) => part.type === 'text')
+      .map((part) => part.text)
+      .join('') ?? ''
+  ).trim()
+}
+
+function createTagCitations(
+  tags: Awaited<ReturnType<typeof getRAGContext>>['tags'],
+): ChatCitation[] {
+  return tags.map((tag) => ({
+    type: 'tag',
+    id: tag.id,
+    title: tag.situation,
+    excerpt: `${tag.judgment} - ${tag.reason}`,
+    relevance: tag.similarity,
+    retrieval: tag.retrieval,
+  }))
+}
+
+async function canAccessAgentShop(
+  supabase: SupabaseClient,
+  userId: string,
+  shopId: string,
+): Promise<boolean> {
+  const { data: ownedShop, error: ownedShopError } = await supabase
+    .from('shops')
+    .select('id')
+    .eq('id', shopId)
+    .maybeSingle()
+
+  if (ownedShopError) {
+    console.error('Agent shop ownership check error:', ownedShopError)
+    return false
+  }
+
+  if (ownedShop) {
+    return true
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('organization_ids')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (profileError) {
+    console.error('Agent profile access check error:', profileError)
+    return false
+  }
+
+  return Array.isArray(profile?.organization_ids) && profile.organization_ids.includes(shopId)
+}
+
 // Chat endpoint with streaming
 const chatSchema = z.object({
   messages: z.array(z.unknown()),
@@ -39,18 +99,22 @@ app.post('/agent/chat', zValidator('json', chatSchema), async (c) => {
   const { messages, shopId } = c.req.valid('json')
   const uiMessages = messages as UIMessage[]
   const latestMessage = uiMessages[uiMessages.length - 1]
-  const messageText =
-    latestMessage?.parts
-      ?.filter((part) => part.type === 'text')
-      .map((part) => part.text)
-      .join('') ?? ''
+  const messageText = getMessageText(latestMessage)
 
   if (!messageText) {
     return c.json({ error: 'Message is required' }, 400)
   }
 
-  if (!process.env.DATABASE_URL) {
-    return c.json({ error: 'Database not configured' }, 500)
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  if (!(await canAccessAgentShop(supabase, user.id, shopId))) {
+    return c.json({ error: 'Forbidden' }, 403)
   }
 
   if (!process.env.OPENAI_API_KEY) {
@@ -58,55 +122,30 @@ app.post('/agent/chat', zValidator('json', chatSchema), async (c) => {
   }
 
   try {
-    // Create database connection
-    const db = postgres(process.env.DATABASE_URL)
-
-    // Generate embedding for the user's question
-    const embedding = await generateEmbedding(messageText)
-
-    // Search for similar tacit knowledge tags
-    const similarTags = await searchSimilarTags(db, embedding, shopId, 5)
-
-    // Get related interview transcripts
-    const relatedInterviews = await getRelatedInterviews(
-      db,
-      similarTags.map((t) => t.id),
-      shopId,
-    )
-
-    // Build RAG context
-    const ragContext = {
-      tags: similarTags,
-      interviews: relatedInterviews,
-    }
-
-    // Build prompt with context
+    const ragContext = await getRAGContext(supabase, messageText, shopId)
     const systemPrompt = buildRAGPrompt(ragContext, messageText)
+    const citations = createTagCitations(ragContext.tags)
 
-    // Generate citations
-    const citations: ChatCitation[] = similarTags.map((tag) => ({
-      type: 'tag' as const,
-      id: tag.id,
-      title: tag.situation,
-      excerpt: `${tag.judgment} - ${tag.reason}`,
-    }))
-
-    // Stream response using Vercel AI SDK
-    const result = await streamText({
-      model: openai('gpt-4o'),
+    const result = streamText({
+      model: aiOpenAI('gpt-4o'),
       system: systemPrompt,
       messages: await convertToModelMessages(uiMessages),
       temperature: 0.7,
       maxOutputTokens: 800,
     })
 
-    // Return streaming response with citations in headers
-    const response = result.toUIMessageStreamResponse()
-    response.headers.set('X-Citations', JSON.stringify(citations))
+    const stream = createUIMessageStream<AgentChatMessage>({
+      originalMessages: uiMessages as AgentChatMessage[],
+      execute({ writer }) {
+        writer.write({
+          type: 'data-citations',
+          data: citations,
+        })
+        writer.merge(result.toUIMessageStream<AgentChatMessage>())
+      },
+    })
 
-    await db.end()
-
-    return response
+    return createUIMessageStreamResponse({ stream })
   } catch (error) {
     console.error('Chat error:', error)
     return c.json({ error: 'Failed to generate response' }, 500)
@@ -120,6 +159,14 @@ const ttsSchema = z.object({
 
 app.post('/agent/tts', zValidator('json', ttsSchema), async (c) => {
   const { text } = c.req.valid('json')
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
 
   if (!process.env.OPENAI_API_KEY) {
     return c.json({ error: 'OpenAI API key not configured' }, 500)

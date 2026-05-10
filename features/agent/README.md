@@ -22,12 +22,14 @@ The Agent uses Retrieval Augmented Generation (RAG) to reference accumulated tac
 
 1. User submits a question
 2. Question is converted to embedding vector using OpenAI text-embedding-3-small
-3. pgvector similarity search finds top-5 most similar tacit_tags
-4. Related interview transcripts are retrieved based on matching tags
-5. RAG prompt is built with context from tags and interviews
-6. GPT-4 generates a streaming response in the proprietor's voice
-7. OpenAI TTS converts the response to audio
-8. Citations are displayed showing which tags were referenced
+3. The API verifies the signed-in user can access the requested shop
+4. pgvector similarity search finds top-5 most similar tacit_tags
+5. If fewer than 5 embedded tags are available, recent tacit_tags are used as fallback context
+6. Related interview transcripts are retrieved based on matching tags
+7. RAG prompt is built with context from tags and interviews
+8. GPT-4o generates a streaming response in the proprietor's voice
+9. Referenced tacit_tags are streamed to the UI as AI SDK data parts
+10. OpenAI TTS converts the response to audio
 
 ### Technical Stack
 
@@ -36,7 +38,7 @@ The Agent uses Retrieval Augmented Generation (RAG) to reference accumulated tac
 | DB Schema     | Drizzle + Supabase migrations          |
 | Chat UI       | Next.js + Vercel AI SDK                |
 | Embedding     | OpenAI text-embedding-3-small          |
-| Vector Search | Supabase pgvector                      |
+| Vector Search | Supabase RPC + pgvector                |
 | LLM           | GPT-4o                                 |
 | TTS           | OpenAI TTS API (nova voice)            |
 | Backend       | Next.js Route Handler / Hono on Vercel |
@@ -72,15 +74,21 @@ Streams a response to the user's question using RAG.
 
 ```json
 {
-  "message": "常連の田中様が来られた時の対応は？",
+  "messages": [
+    {
+      "id": "message-id",
+      "role": "user",
+      "parts": [{ "type": "text", "text": "常連の田中様が来られた時の対応は？" }]
+    }
+  ],
   "shopId": "uuid"
 }
 ```
 
 **Response:**
 
-- Streaming response using Vercel AI SDK
-- Citations returned in `X-Citations` header as JSON
+- Streaming response using Vercel AI SDK UI message streams
+- Citations are sent as a `data-citations` part and rendered below the assistant message
 
 ### POST /api/agent/tts
 
@@ -103,14 +111,31 @@ Converts text to speech using OpenAI TTS.
 ```bash
 # Required for Agent feature
 OPENAI_API_KEY=sk-...
-DATABASE_URL=postgresql://...
+NEXT_PUBLIC_SUPABASE_URL=https://...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 ```
+
+Vector search uses the `match_tacit_tags_for_agent` RPC from migration
+`20260506130000_agent_rag_rpc_and_access.sql`. If the RPC is not applied yet, Agent falls back
+to recent tacit_tags so the chat can still answer from recorded tacit knowledge.
 
 ## Usage
 
 ### For Successors
 
-1. Navigate to `/successor/agent` in the app
+1. Ensure the successor profile has a target shop ID in `profiles.organization_ids`
+2. Navigate to `/successor/agent` in the app
+3. Either:
+   - Click one of the sample questions
+   - Type your own question in the input field
+4. Submit the question
+5. View the streaming response
+6. Click the audio button to hear the response
+7. View citations to see which tacit_tags were referenced
+
+### For Shops
+
+1. Navigate to `/shop/agent` in the app
 2. Either:
    - Click one of the sample questions
    - Type your own question in the input field
@@ -141,10 +166,12 @@ The Agent feature requires:
 - [x] Chat UI with message history
 - [x] Question embedding
 - [x] pgvector similarity search (top-k=5)
+- [x] recent-tag fallback when embeddings are missing
 - [x] RAG prompt with LLM streaming
 - [x] Text response display
 - [x] OpenAI TTS audio generation & playback
-- [x] Citation display (tag ID / interview name)
+- [x] Citation display from streamed `data-citations`
+- [x] Authenticated shop access check before RAG lookup
 - [x] 3 sample questions with working demo
 
 ## Future Enhancements (Out of Scope for MVP)

@@ -11,15 +11,19 @@ export type ChatCitation = {
   id: string
   title: string
   excerpt: string
+  relevance?: number
+  retrieval?: 'vector' | 'recent'
 }
 
 export type RAGContext = {
   tags: Array<{
     id: string
+    interviewId: string | null
     situation: string
     judgment: string
     reason: string
     similarity: number
+    retrieval: 'vector' | 'recent'
   }>
   interviews: Array<{
     id: string

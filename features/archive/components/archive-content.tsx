@@ -4,6 +4,8 @@ import { useState } from 'react'
 
 import AppShell from '@/components/ui/app-shell'
 import Tabs from '@/components/ui/tabs'
+import PageContainer from '@/components/layout/page-container'
+import PageHeader from '@/components/layout/page-header'
 
 import VideoUploadForm from '@/features/archive/components/video-upload-form'
 import InterviewsList from '@/features/archive/components/interviews-list'
@@ -60,15 +62,11 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-            Archive - 暗黙知の蓄積
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            インタビュー動画・音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。
-          </p>
-        </div>
+      <PageContainer>
+        <PageHeader
+          title="Archive - 暗黙知の蓄積"
+          description="インタビュー動画・音声から、言語化されていない判断基準を抽出し、構造化して蓄積します。"
+        />
 
         <Tabs
           activeValue={activeTab}
@@ -77,7 +75,7 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
             {
               content: (
                 <div className="max-w-2xl">
-                  <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="mb-4 text-xl font-semibold text-ink">
                     新しいインタビュー動画・音声をアップロード
                   </h2>
                   <VideoUploadForm onSuccess={() => window.location.reload()} />
@@ -89,7 +87,7 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
             {
               content: (
                 <>
-                  <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="mb-4 text-xl font-semibold text-ink">
                     インタビュー一覧 ({interviews.length}件)
                   </h2>
                   <InterviewsList interviews={interviews} onProcess={handleProcess} />
@@ -101,7 +99,7 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
             {
               content: (
                 <>
-                  <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="mb-4 text-xl font-semibold text-ink">
                     暗黙知タグ ({tags.length}件)
                   </h2>
                   <TacitTagsList tags={tags} />
@@ -113,7 +111,7 @@ export default function ArchiveContent({ interviews, tags }: ArchiveContentProps
           ]}
           onValueChange={setActiveTab}
         />
-      </div>
+      </PageContainer>
     </AppShell>
   )
 }
