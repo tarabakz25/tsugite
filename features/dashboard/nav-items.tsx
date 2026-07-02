@@ -22,6 +22,12 @@ export const SHOP_NAV_ITEMS: NavItem[] = [
     sub: '相談する',
     icon: <Bot size={18} />,
   },
+  {
+    href: '/dashboard/guide',
+    label: 'Guide',
+    sub: '現場で導く',
+    icon: <Compass size={18} />,
+  },
 ]
 
 export const SUCCESSOR_NAV_ITEMS: NavItem[] = [

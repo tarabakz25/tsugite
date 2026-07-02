@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import GuideInterface from '@/features/guide/components/guide-interface'
 import { getReferenceScenes } from '@/features/guide/actions'
 import { parseUserRole } from '@/lib/roles'
+import { resolveShopIdForUser } from '@/lib/shops'
 
 export default async function DashboardGuidePage() {
   const supabase = await createClient()
@@ -15,16 +16,15 @@ export default async function DashboardGuidePage() {
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
   const role = parseUserRole(profile)
+  if (!role) redirect('/onboarding/role')
 
-  // Guide is successor-only
-  if (role !== 'successor') redirect('/shop')
+  const shopId = await resolveShopIdForUser(supabase, user.id, profile, role)
 
-  // TODO: resolve the shop linked to this successor once the
-  //       applications <-> shop relationship is implemented.
-  //       Using a mock shop ID for MVP.
-  const mockShopId = '00000000-0000-0000-0000-000000000001'
+  if (!shopId) {
+    return <GuideInterface shopId="" scenes={[]} />
+  }
 
-  const scenesResult = await getReferenceScenes(mockShopId)
+  const scenesResult = await getReferenceScenes(shopId)
   const scenes = scenesResult.success
     ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase returns generic Record type
       scenesResult.data.map((scene: any) => ({
@@ -34,5 +34,5 @@ export default async function DashboardGuidePage() {
       }))
     : []
 
-  return <GuideInterface shopId={mockShopId} scenes={scenes} />
+  return <GuideInterface shopId={shopId} scenes={scenes} />
 }

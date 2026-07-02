@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **データ共有（shop ↔ successor）**: dashboard の Archive・Guide・Agent 3ページで、successor が `organization_ids` に紐づいた shop のデータを閲覧・利用できるように変更。モックの shop ID ハードコードを廃止し、`resolveShopIdForUser` で role に関係なく shop ID を解決する共通ロジックに統一。紐づけがない場合は「店舗がありません」メッセージを表示。
+
+- **Guide**: 店主（`shop` ロール）もGuide画面にアクセス可能に。ナビゲーションにGuideリンクを追加し、ページのロールチェックを緩和。店主は自身の店舗IDで参照シーンを取得・利用できる。
+
+
+
 - **デザインシステム刷新（モック準拠リデザイン）**: Claude Design で作成した TSUGITE Mock に合わせて UI を全面的にリデザイン。
   - **デザイントークン**: カラーパレットをモック準拠の生成色系（`--washi` → 暖色 `#efe9da`）に変更。ネイビー（`--navy`）、リーフ（`--leaf`）、スカイ（`--sky`）を新規追加。`--shu` をモックの `--akane` 値 `#b85a2e` に更新。
   - **フォント**: Geist Sans → Noto Sans JP、Geist Mono → JetBrains Mono に変更。Noto Serif JP のウェイトを拡充（300〜900）。
